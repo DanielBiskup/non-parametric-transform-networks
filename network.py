@@ -61,20 +61,18 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 """ Non-parametric transformation network """
 class NPTN(nn.Module):
     def __init__(self):
-        M=3
-        N=2 
-        G=5
+        self.M=3
+        self.N=2 
+        self.G=5
         filtersize = 4
+        
         super(NPTN, self).__init__()
-        self.conv1 = nn.Conv2d(M, M*N*G, filtersize, groups=M) # in, out, kernel size, groups as in paper
-        self.maxpool3d = nn.MaxPool3d((G, 1, 1)) # stride?? tuple needed? in right order?
         
-
-        # channel reordering how?
+        self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M) # in, out, kernel size, groups as in paper
+        self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
+        self.meanpool3d = nn.AvgPool3d((self.M, 1, 1)) # Is that the right pooling? - AvgPool3d?
         
-        # Do mean pooling - AvgPool3d?
-        
-        # what now? make this a layer?
+        # TODO make this a layer
         
 
     def forward(self, x):
@@ -82,7 +80,12 @@ class NPTN(nn.Module):
         x = self.conv1(x)
         print('Shape after convolution', x.size())
         x = self.maxpool3d(x)
-        print("Shape after MaxPool3d: ", x.size())         # check dimension (should be M*N)
+        print("Shape after MaxPool3d: ", x.size()) # dimension should be M*N
+        permutation = torch.from_numpy(np.array([j for i in range(self.M) for j in range(self.N)]))
+        x = x[:, permutation] # reorder channels
+        print("Shape after Channel reordering: ", x.size())
+        x = self.meanpool3d(x)
+        print('Shape after Mean Pooling: '. x.size())
         return x
 
 
@@ -90,13 +93,18 @@ net = NPTN()
 outputs = net(Variable(images))
 
 
-
+''' Testing area 
 # test channel reordering
-test_tensor = torch.from_numpy(np.array([[1,1],[2,2],[1,1],[4,4]]))
-print(test_tensor)
+permutation = [2,1,0]
+test_tensor = torch.cat([images,images,images])
+
+imshow(torchvision.utils.make_grid(test_tensor))
+#print(test_tensor)
 print(test_tensor.size())
+reordered_t = test_tensor[:,permutation] # doesn't work
 
-reordered_t = test_tensor[[1,3,2,4],:] # doesn't work
-print(reordered_t)
+#print(reordered_t)
+imshow(torchvision.utils.make_grid(reordered_t))
+
 print(reordered_t.size())
-
+'''
