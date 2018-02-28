@@ -60,39 +60,43 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 """ Non-parametric transformation network """
 class NPTN(nn.Module):
-    def __init__(self, M=3, N=2, G=3, filtersize):
-        super(Net, self).__init__()
+    def __init__(self):
+        M=3
+        N=2 
+        G=5
+        filtersize = 4
+        super(NPTN, self).__init__()
         self.conv1 = nn.Conv2d(M, M*N*G, filtersize, groups=M) # in, out, kernel size, groups as in paper
-        self.pool = nn.MaxPool3d((G, 1, 1)) # tuple needed? in right order?
-        # check dimension (should be M*N)
+        self.maxpool3d = nn.MaxPool3d((G, 1, 1)) # stride?? tuple needed? in right order?
+        
+
         # channel reordering how?
         
         # Do mean pooling - AvgPool3d?
         
         # what now? make this a layer?
         
-        # rest stuff copied from tutorial
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        print('\nShape of x ', x.size())
+        x = self.conv1(x)
+        print('Shape after convolution', x.size())
+        x = self.maxpool3d(x)
+        print("Shape after MaxPool3d: ", x.size())         # check dimension (should be M*N)
         return x
 
 
-net = NTPN()
+net = NPTN()
+outputs = net(Variable(images))
 
 
 
+# test channel reordering
+test_tensor = torch.from_numpy(np.array([[1,1],[2,2],[1,1],[4,4]]))
+print(test_tensor)
+print(test_tensor.size())
 
-
-
-
+reordered_t = test_tensor[[1,3,2,4],:] # doesn't work
+print(reordered_t)
+print(reordered_t.size())
 
