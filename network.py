@@ -27,10 +27,7 @@ print(torch.cuda.is_available())
 
 
 # load dataset CIFAR10, if not available download and extract
-# images are normalized to range [-1,1]
-
-
-# taken from tutorial 
+# images are normalized to range [-1,1], taken from tutorial 
 transform = transforms.Compose(
     [transforms.ToTensor(),
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -48,9 +45,7 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 
-
-
-
+# show a few images, taken from tutorial
 
 # get some random training images
 dataiter = iter(trainloader)
@@ -63,12 +58,20 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 
 
-""" example structure from network  """
-class Net(nn.Module):
-    def __init__(self):
+""" Non-parametric transformation network """
+class NPTN(nn.Module):
+    def __init__(self, M=3, N=2, G=3, filtersize):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool3d(2, 2)
+        self.conv1 = nn.Conv2d(M, M*N*G, filtersize, groups=M) # in, out, kernel size, groups as in paper
+        self.pool = nn.MaxPool3d((G, 1, 1)) # tuple needed? in right order?
+        # check dimension (should be M*N)
+        # channel reordering how?
+        
+        # Do mean pooling - AvgPool3d?
+        
+        # what now? make this a layer?
+        
+        # rest stuff copied from tutorial
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
@@ -84,7 +87,7 @@ class Net(nn.Module):
         return x
 
 
-net = Net()
+net = NTPN()
 
 
 
