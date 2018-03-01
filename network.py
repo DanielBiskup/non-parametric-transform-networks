@@ -58,7 +58,8 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 
 
-""" Non-parametric transformation network """
+
+""" Non-parametric transformation network """ # TODO make this a layer
 class NPTN(nn.Module):
     def __init__(self):
         self.M=3
@@ -71,9 +72,7 @@ class NPTN(nn.Module):
         self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M) # in, out, kernel size, groups as in paper
         self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
         self.meanpool3d = nn.AvgPool3d((self.M, 1, 1)) # Is that the right pooling? - AvgPool3d?
-        
-        # TODO make this a layer
-        
+                
 
     def forward(self, x):
         print('\nShape of x ', x.size())
@@ -82,15 +81,19 @@ class NPTN(nn.Module):
         x = self.maxpool3d(x)
         print("Shape after MaxPool3d: ", x.size()) # dimension should be M*N
         permutation = torch.from_numpy(np.array([j for i in range(self.M) for j in range(self.N)]))
+        print('permutation ', permutation)
         x = x[:, permutation] # reorder channels
         print("Shape after Channel reordering: ", x.size())
         x = self.meanpool3d(x)
-        print('Shape after Mean Pooling: '. x.size())
+        print('Shape after Mean Pooling: ', x.size())
         return x
 
 
 net = NPTN()
 outputs = net(Variable(images))
+
+#print(outputs)
+
 
 
 ''' Testing area 
