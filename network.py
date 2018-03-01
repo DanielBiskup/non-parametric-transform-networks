@@ -13,7 +13,7 @@ from torchvision import datasets, transforms
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
-
+import torch.optim as optim
 
 
 
@@ -22,8 +22,8 @@ def imshow(img):
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
-
-print(torch.cuda.is_available())
+"""
+print(torch.cuda.is_available()) # is not and code can not use cuda (yet?)
 
 
 # load dataset CIFAR10, if not available download and extract
@@ -56,16 +56,15 @@ imshow(torchvision.utils.make_grid(images))
 # print labels
 print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
+"""
 
 
-
-""" Non-parametric transformation network """ # TODO make this a layer
+""" Non-parametric transformation network layer """ # TODO make this a layer
 class NPTN(nn.Module):
-    def __init__(self):
-        self.M=3
-        self.N=2 
-        self.G=5
-        filtersize = 4
+    def __init__(self, M, N, G, filtersize):
+        self.M=M
+        self.N=N 
+        self.G=G
         
         super(NPTN, self).__init__()
         
@@ -75,24 +74,36 @@ class NPTN(nn.Module):
                 
 
     def forward(self, x):
-        print('\nShape of x ', x.size())
+        #print('\nShape of x ', x.size())
         x = self.conv1(x)
-        print('Shape after convolution', x.size())
+        #print('Shape after convolution', x.size())
         x = self.maxpool3d(x)
-        print("Shape after MaxPool3d: ", x.size()) # dimension should be M*N
+        #print("Shape after MaxPool3d: ", x.size()) # dimension should be M*N
         permutation = torch.from_numpy(np.array([j for i in range(self.M) for j in range(self.N)]))
-        print('permutation ', permutation)
+        #print('permutation ', permutation)
         x = x[:, permutation] # reorder channels
-        print("Shape after Channel reordering: ", x.size())
+        #print("Shape after Channel reordering: ", x.size())
         x = self.meanpool3d(x)
-        print('Shape after Mean Pooling: ', x.size())
+        #print('Shape after Mean Pooling: ', x.size())
         return x
 
 
-net = NPTN()
-outputs = net(Variable(images))
+
+
+#net = NPTN()
+#outputs = net(Variable(images))
 
 #print(outputs)
+
+
+############## Chooses optimizer and loss  ##############
+#criterion = nn.CrossEntropyLoss()
+#optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+
+'''
+
+'''
+
 
 
 
