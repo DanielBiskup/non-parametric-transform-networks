@@ -48,13 +48,16 @@ classes = ('plane', 'car', 'bird', 'cat',
 class twoLayeredNPTN(nn.Module):
     def __init__(self, N, G):
         super(twoLayeredNPTN, self).__init__()
+        #self.weight =  # torch tensor, but which size?
         # first layer 
         self.N = N
-        self.nptn = NPTN(3, N, G, 3) # what is the filter size?!
+        self.nptn = NPTN(3, N, G, 3) # TODO what is the filter size?!
         self.batchnorm = nn.BatchNorm2d(N)   # is 2d the right one?
         self.pool = nn.MaxPool2d(2)
+        self.prelu = nn.PReLU()
         # second layer
         self.nptn2 = NPTN(N, N, G, 3)
+        self.prelu2 = nn.PReLU()
          
         self.fc1 = nn.Linear(N * 6 * 6, 10)
 
@@ -63,13 +66,12 @@ class twoLayeredNPTN(nn.Module):
         #print('x after nptn ', x.size())
         x = self.batchnorm(x)
         #print('batchnorm ', x.size())
-        #x = F.prelu(self.nptn(x), 0.1)  # TODO need PReLU layer!! which weight?
-        #print('PReLU ', x.size(x))
-        x = self.pool(F.relu(x))
+        #x = F.prelu(self.nptn(x), 0.1) 
+        x = self.pool(self.prelu(x))
         #print('shape first layer ', x.size())
         x = self.batchnorm(self.nptn2(x))
         #print('after batchnorm 2 ', x.size())
-        x = self.pool(F.relu(x))
+        x = self.pool(self.prelu2(x))
         #print('shape second layer ', x.size())
         
         x = x.view(-1, self.N * 6 * 6)

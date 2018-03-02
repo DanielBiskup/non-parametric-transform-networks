@@ -59,6 +59,14 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 """
 
 
+def make_permutation(M,N):
+    nums = [i for i in range(M*N)]
+    NUMS = np.array(nums)
+    NUMS = np.reshape(NUMS, (M,N))
+    NUMS = NUMS.T
+    return NUMS.flatten()
+
+
 """ Non-parametric transformation network layer """ # TODO make this a layer
 class NPTN(nn.Module):
     def __init__(self, M, N, G, filtersize):
@@ -79,7 +87,7 @@ class NPTN(nn.Module):
         #print('Shape after convolution', x.size())
         x = self.maxpool3d(x)
         #print("Shape after MaxPool3d: ", x.size()) # dimension should be M*N
-        permutation = torch.from_numpy(np.array([j for i in range(self.M) for j in range(self.N)]))
+        permutation = make_permutation(self.M, self.N)
         #print('permutation ', permutation)
         x = x[:, permutation] # reorder channels
         #print("Shape after Channel reordering: ", x.size())
