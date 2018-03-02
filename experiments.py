@@ -20,6 +20,13 @@ import torch.optim as optim
 from network import NPTN
 
 
+###############   Test if you can use the GPU   ################
+
+use_cuda = False
+if torch.cuda.is_available():
+    use_cuda = True
+    print('Using CUDA')
+
 ###########   loading and preprocessing the data    ############
 
 # load dataset CIFAR10, normalize, crop and flip as in paper
@@ -83,6 +90,9 @@ class twoLayeredNPTN(nn.Module):
 netN24G2 = twoLayeredNPTN(24,2)
 net = netN24G2
 
+if use_cuda:
+    net.cuda()
+
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.CrossEntropyLoss()   #TODO which things here?!
@@ -109,7 +119,10 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
         inputs, labels = data
 
         # wrap them in Variable
-        inputs, labels = Variable(inputs), Variable(labels)
+        if use_cuda:
+            inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
+        else:    
+            inputs, labels = Variable(inputs), Variable(labels)
 
         # zero the parameter gradients
         optimizer.zero_grad()
