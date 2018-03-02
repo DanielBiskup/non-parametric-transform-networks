@@ -58,7 +58,7 @@ class twoLayeredNPTN(nn.Module):
         #self.weight =  # torch tensor, but which size?
         # first layer 
         self.N = N
-        self.nptn = NPTN(3, N, G, 3) # TODO what is the filter size?!
+        self.nptn = NPTN(3, N, G, 3) # TODO maybe change filter size
         self.batchnorm = nn.BatchNorm2d(N)   # is 2d the right one?
         self.pool = nn.MaxPool2d(2)
         self.prelu = nn.PReLU()
@@ -66,7 +66,7 @@ class twoLayeredNPTN(nn.Module):
         self.nptn2 = NPTN(N, N, G, 3)
         self.prelu2 = nn.PReLU()
          
-        self.fc1 = nn.Linear(N * 6 * 6, 10)
+        self.fc1 = nn.Softmax(N * 6 * 6, 10)
 
     def forward(self, x):
         x = self.nptn(x)
@@ -135,9 +135,9 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
 
         # print statistics
         running_loss += loss.data[0]
-        if i % 50 == 49:    
+        if i % 500 == 499:    
             print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 2000)) # TODO why divide by 2000?
+                  (epoch + 1, i + 1, running_loss / 500)) 
             running_loss = 0.0
 
 print('Finished Training')
@@ -145,16 +145,28 @@ print('Finished Training')
 ################       Test the network        ##########################
 
 
-# measure accuracy, but how to 
+# measure accuracy (not in paper though, so could be removed)
 correct = 0
 total = 0
+running_loss = 0.0
+
 for data in testloader:
     images, labels = data
+    if use_cuda:
+        images, labels = Variable(images.cuda()), Variable(labels.cuda())
+    else:    
+        images, labels = Variable(images), Variable(labels)
+
     outputs = net(Variable(images))
+    loss = criterion(outputs, labels)
+    
+    
+    running_loss += loss.data[0] * images.size(0)
+    
     _, predicted = torch.max(outputs.data, 1)
     total += labels.size(0)
     correct += (predicted == labels).sum()
 
 print('Accuracy of the network on the 10000 test images: %d %%' % (
     100 * correct / total))
-
+print('Ćross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
