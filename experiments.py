@@ -128,3 +128,20 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
             running_loss = 0.0
 
 print('Finished Training')
+
+################       Test the network        ##########################
+
+
+# measure accuracy, but how to 
+correct = 0
+total = 0
+for data in testloader:
+    images, labels = data
+    outputs = net(Variable(images))
+    _, predicted = torch.max(outputs.data, 1)
+    total += labels.size(0)
+    correct += (predicted == labels).sum()
+
+print('Accuracy of the network on the 10000 test images: %d %%' % (
+    100 * correct / total))
+
