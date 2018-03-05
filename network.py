@@ -79,7 +79,8 @@ class NPTN(nn.Module):
         self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M) # in, out, kernel size, groups as in paper
         self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
         self.meanpool3d = nn.AvgPool3d((self.M, 1, 1)) # Is that the right pooling? - AvgPool3d?
-                
+        
+        self.permutation = make_permutation(self.M, self.N)
 
     def forward(self, x):
         #print('\nShape of x ', x.size())
@@ -87,9 +88,9 @@ class NPTN(nn.Module):
         #print('Shape after convolution', x.size())
         x = self.maxpool3d(x)
         #print("Shape after MaxPool3d: ", x.size()) # dimension should be M*N
-        permutation = make_permutation(self.M, self.N)
+        
         #print('permutation ', permutation)
-        x = x[:, permutation] # reorder channels
+        x = x[:, self.permutation] # reorder channels
         #print("Shape after Channel reordering: ", x.size())
         x = self.meanpool3d(x)
         #print('Shape after Mean Pooling: ', x.size())

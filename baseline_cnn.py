@@ -52,43 +52,43 @@ classes = ('plane', 'car', 'bird', 'cat',
 #############        Network definition       ####################
 
 class twoLayeredCNN(nn.Module):
-    def __init__(self):
+    def __init__(self, filtersize):
         super(twoLayeredCNN, self).__init__()
-        #self.weight =  # torch tensor, but which size?
+        self.final_layer_dim = (7-np.int(filtersize/1.7))**2   # works for filtersizes 3,5,7
         # first layer 
-        self.conv1 = nn.Conv2d(3, 48, 3) # TODO maybe change filter size
+        self.conv1 = nn.Conv2d(3, 48, filtersize) # TODO maybe change filter size
         self.batchnorm = nn.BatchNorm2d(48)   # is 2d the right one?
         self.pool = nn.MaxPool2d(2)
         self.prelu = nn.PReLU()
         # second layer
-        self.conv2 = nn.Conv2d(48, 16, 3)
+        self.conv2 = nn.Conv2d(48, 16, filtersize)
         self.batchnorm2 = nn.BatchNorm2d(16) 
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
          
-        self.fc1 = nn.Linear(16 * 6 * 6, 10)
+        self.fc1 = nn.Linear(16 * self.final_layer_dim, 10)
 
     def forward(self, x):
         x = self.conv1(x)
-        print('x after conv ', x.size())
+        #print('x after conv ', x.size())
         x = self.batchnorm(x)
-        print('batchnorm ', x.size())
+        #print('batchnorm ', x.size())
         #x = F.prelu(self.nptn(x), 0.1) 
         x = self.pool(self.prelu(x))
-        print('shape first layer ', x.size())
+        #print('shape first layer ', x.size())
         x = self.batchnorm2(self.conv2(x))
-        print('after batchnorm 2 ', x.size())
+        #print('after batchnorm 2 ', x.size())
         x = self.pool2(self.prelu2(x))
-        print('shape second layer ', x.size())
+        #print('shape second layer ', x.size())
         
-        x = x.view(-1, 16 * 6 * 6)
-        print('shape second layer ', x.size())
+        x = x.view(-1, 16 * self.final_layer_dim)
+        #print('shape second layer ', x.size())
         x = F.softmax(self.fc1(x), dim=1)
-        print('after softmax ', x.size())
+        #print('after softmax ', x.size())
         return x
 
 
-netN24G2 = twoLayeredCNN()
+netN24G2 = twoLayeredCNN(filtersize=7)
 net = netN24G2
 
 if use_cuda:

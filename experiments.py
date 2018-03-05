@@ -53,22 +53,22 @@ classes = ('plane', 'car', 'bird', 'cat',
 #############        Network definition       ####################
 
 class twoLayeredNPTN(nn.Module):
-    def __init__(self, N, G):
+    def __init__(self, N, G, filtersize):
         super(twoLayeredNPTN, self).__init__()
-        #self.weight =  # torch tensor, but which size?
+        self.final_layer_dim = (7-np.int(filtersize/1.7))**2   # works for filtersizes 3,5,7
         # first layer 
         self.N = N
-        self.nptn = NPTN(3, N, G, 3) # TODO maybe change filter size
+        self.nptn = NPTN(3, N, G, filtersize)
         self.batchnorm = nn.BatchNorm2d(N)   # is 2d the right one?
         self.pool = nn.MaxPool2d(2)
         self.prelu = nn.PReLU()
         # second layer
-        self.nptn2 = NPTN(N, N, G, 3)
+        self.nptn2 = NPTN(N, N, G, filtersize)
         self.batchnorm2 = nn.BatchNorm2d(N) 
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
          
-        self.fc1 = nn.Linear(N * 6 * 6, 10)
+        self.fc1 = nn.Linear(N * self.final_layer_dim, 10)
 
     def forward(self, x):
         x = self.nptn(x)
@@ -83,14 +83,14 @@ class twoLayeredNPTN(nn.Module):
         x = self.pool2(self.prelu2(x))
         #print('shape second layer ', x.size())
         
-        x = x.view(-1, self.N * 6 * 6)
+        x = x.view(-1, self.N * self.final_layer_dim)
         #print('shape second layer ', x.size())
         x = F.softmax(self.fc1(x), dim=1)
         #print('after softmax ', x.size())
         return x
 
 
-netN24G2 = twoLayeredNPTN(24,2)
+netN24G2 = twoLayeredNPTN(16,3,7)
 net = netN24G2
 
 if use_cuda:
@@ -104,7 +104,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 
 ############## Train the network  ######################
 
-num_epochs = 2 # paper: 300
+num_epochs = 20 # paper: 300
 
 # (taken from tutorial) 
 for epoch in range(num_epochs):  # loop over the dataset multiple times
