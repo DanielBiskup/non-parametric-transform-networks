@@ -104,7 +104,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 
 ############## Train the network  ######################
 
-num_epochs = 20 # paper: 300
+num_epochs = 1 # paper: 300
 
 # (taken from tutorial) 
 for epoch in range(num_epochs):  # loop over the dataset multiple times
@@ -168,7 +168,7 @@ for data in testloader:
     
     _, predicted = torch.max(outputs.data, 1)
     total += labels.size(0)
-    #correct += (predicted == labels).sum()
+    #correct += (predicted == labels.data).sum()
 
 #print('Accuracy of the network on the 10000 test images: %d %%' % (
 #    100 * correct / total))

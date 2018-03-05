@@ -102,7 +102,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 
 ############## Train the network  ######################
 
-num_epochs = 2 # paper: 300
+num_epochs = 1 # paper: 300
 
 # (taken from tutorial) 
 for epoch in range(num_epochs):  # loop over the dataset multiple times
