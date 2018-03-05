@@ -85,12 +85,12 @@ class twoLayeredNPTN(nn.Module):
         
         x = x.view(-1, self.N * self.final_layer_dim)
         #print('shape second layer ', x.size())
-        x = F.softmax(self.fc1(x), dim=1)
+        x = F.log_softmax(self.fc1(x), dim=1)
         #print('after softmax ', x.size())
         return x
 
 
-netN24G2 = twoLayeredNPTN(16,3,7)
+netN24G2 = twoLayeredNPTN(48,1,7)
 net = netN24G2
 
 if use_cuda:
@@ -98,22 +98,23 @@ if use_cuda:
 
 ############## Chooses optimizer and loss  ##############
 
-criterion = nn.CrossEntropyLoss()   #TODO which things here?!
+criterion = nn.NLLLoss()   #TODO which things here?!
 optimizer = optim.SGD(net.parameters(), lr=0.1)
 
 
 ############## Train the network  ######################
 
-num_epochs = 1 # paper: 300
+
+num_epochs = 300 # paper: 300
 
 # (taken from tutorial) 
 for epoch in range(num_epochs):  # loop over the dataset multiple times
 
     if epoch == 150:
-        optimizer = optim.SGD(net.parameters(), lr=0.09)
+        optimizer = optim.SGD(net.parameters(), lr=0.01)
         print('Learning rate adapted') # TODO change learning rate (optimizer? after certain iterations)
     if epoch == 225:
-        optimizer = optim.SGD(net.parameters(), lr=0.08)
+        optimizer = optim.SGD(net.parameters(), lr=0.001)
         print('Learning rate adapted')
         
     running_loss = 0.0
@@ -168,8 +169,9 @@ for data in testloader:
     
     _, predicted = torch.max(outputs.data, 1)
     total += labels.size(0)
-    #correct += (predicted == labels.data).sum()
 
-#print('Accuracy of the network on the 10000 test images: %d %%' % (
-#    100 * correct / total))
+    correct += (predicted == labels.data).sum()
+
+print('Accuracy of the NPTN network on the 10000 test images: %d %%' % (
+    100 * correct / total))
 print('Ćross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
