@@ -64,7 +64,9 @@ class twoLayeredNPTN(nn.Module):
         self.prelu = nn.PReLU()
         # second layer
         self.nptn2 = NPTN(N, N, G, 3)
+        self.batchnorm2 = nn.BatchNorm2d(N) 
         self.prelu2 = nn.PReLU()
+        self.pool2 = nn.MaxPool2d(2)
          
         self.fc1 = nn.Linear(N * 6 * 6, 10)
 
@@ -76,14 +78,15 @@ class twoLayeredNPTN(nn.Module):
         #x = F.prelu(self.nptn(x), 0.1) 
         x = self.pool(self.prelu(x))
         #print('shape first layer ', x.size())
-        x = self.batchnorm(self.nptn2(x))
+        x = self.batchnorm2(self.nptn2(x))
         #print('after batchnorm 2 ', x.size())
-        x = self.pool(self.prelu2(x))
+        x = self.pool2(self.prelu2(x))
         #print('shape second layer ', x.size())
         
         x = x.view(-1, self.N * 6 * 6)
-
-        x = F.softmax(self.fc1(x))
+        #print('shape second layer ', x.size())
+        x = F.softmax(self.fc1(x), dim=1)
+        #print('after softmax ', x.size())
         return x
 
 
@@ -145,7 +148,7 @@ print('Finished Training')
 ################       Test the network        ##########################
 
 
-# measure accuracy (not in paper though, so could be removed)
+# measure accuracy (not in paper though, so could be removed), currently not working
 correct = 0
 total = 0
 running_loss = 0.0
@@ -157,7 +160,7 @@ for data in testloader:
     else:    
         images, labels = Variable(images), Variable(labels)
 
-    outputs = net(Variable(images))
+    outputs = net(images)
     loss = criterion(outputs, labels)
     
     
@@ -165,8 +168,8 @@ for data in testloader:
     
     _, predicted = torch.max(outputs.data, 1)
     total += labels.size(0)
-    correct += (predicted == labels).sum()
+    #correct += (predicted == labels).sum()
 
-print('Accuracy of the network on the 10000 test images: %d %%' % (
-    100 * correct / total))
+#print('Accuracy of the network on the 10000 test images: %d %%' % (
+#    100 * correct / total))
 print('Ćross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
