@@ -18,6 +18,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from network import NPTN
+import pandas as pd
 
 
 ###############   Test if you can use the GPU   ################
@@ -105,7 +106,11 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 ############## Train the network  ######################
 
 
-num_epochs = 300 # paper: 300
+num_epochs = 2 # paper: 300
+
+stat_epoch = list()
+stat_batch = list()
+stat_loss = list()
 
 # (taken from tutorial) 
 for epoch in range(num_epochs):  # loop over the dataset multiple times
@@ -139,12 +144,26 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
 
         # print statistics
         running_loss += loss.data[0]
-        if i % 500 == 499:    
+        if i % 500 == 499:
+            print('Start')
+            stat_epoch.append(epoch + 1)
+            stat_batch.append(i + 1)
+            stat_loss.append(running_loss / 500)
             print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 500)) 
+                  (stat_epoch[-1], stat_batch[-1], stat_loss[-1]))
             running_loss = 0.0
+            print('Stop')
 
 print('Finished Training')
+
+# Save Data to CSV
+stats_df = pd.DataFrame(
+    {'epoch': stat_epoch,
+     'batch': stat_batch,
+     'loss': stat_loss
+    })
+    
+stats_df.to_csv("stats.csv")
 
 ################       Test the network        ##########################
 
@@ -174,4 +193,4 @@ for data in testloader:
 
 print('Accuracy of the NPTN network on the 10000 test images: %d %%' % (
     100 * correct / total))
-print('Ćross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
+print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
