@@ -66,7 +66,7 @@ class twoLayeredNPTN(nn.Module):
         self.nptn2 = NPTN(N, N, G, 3)
         self.prelu2 = nn.PReLU()
          
-        self.fc1 = nn.Softmax(N * 6 * 6, 10)
+        self.fc1 = nn.Linear(N * 6 * 6, 10)
 
     def forward(self, x):
         x = self.nptn(x)
@@ -83,7 +83,7 @@ class twoLayeredNPTN(nn.Module):
         
         x = x.view(-1, self.N * 6 * 6)
 
-        x = self.fc1(x)
+        x = F.softmax(self.fc1(x))
         return x
 
 
