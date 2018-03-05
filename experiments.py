@@ -91,7 +91,7 @@ class twoLayeredNPTN(nn.Module):
         return x
 
 
-netN24G2 = twoLayeredNPTN(48,1,7)
+netN24G2 = twoLayeredNPTN(16,3,7)
 net = netN24G2
 
 if use_cuda:
@@ -106,7 +106,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 ############## Train the network  ######################
 
 
-num_epochs = 2 # paper: 300
+num_epochs = 300 # paper: 300
 
 stat_epoch = list()
 stat_batch = list()
