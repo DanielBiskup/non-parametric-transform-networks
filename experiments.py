@@ -55,7 +55,7 @@ if not os.path.exists(experiment_out_dir):
 
 csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv")
 txt_file_name = os.path.join( experiment_out_dir, spec_string + ".txt")
-txt_file = open(txt_file_name, "w" )
+txt_file = open(txt_file_name, "w", 1)
 ###############   Test if you can use the GPU   ################
 
 use_cuda = False
@@ -230,7 +230,6 @@ def training_epoch(epoch):
                 update='append',
                 opts=dict(showlegend=True)
             )
-            
             
             running_loss = 0.0
 
