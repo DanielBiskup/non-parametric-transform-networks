@@ -22,6 +22,17 @@ from network import NPTN
 import pandas as pd
 import sys
 
+import argparse
+
+
+parser = argparse.ArgumentParser(description='GLRC stage 1')
+parser.add_argument('-conv_1', '--conv_1_features', default = 24, type=int)
+parser.add_argument('-g', '--group_size', default = 2, type=int)
+parser.add_argument('-k', '--kernel_size', default = 5, type=int)
+
+args = parser.parse_args()
+
+
 ###############   Test if you can use the GPU   ################
 
 use_cuda = False
@@ -92,15 +103,18 @@ class twoLayeredNPTN(nn.Module):
         return x
 
 
-conv_1_features = 24
-G = 2
-kernel_size = 5
+conv_1_features = args.conv_1_features
+G = args.group_size
+kernel_size = args.kernel_size
+
 netN24G2 = twoLayeredNPTN(conv_1_features, G, kernel_size)
 net = netN24G2
 
 if use_cuda:
     net.cuda()
-file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".csv"
+csv_file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".csv"
+txt_file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".txt"
+txt_file = open(txt_file_name)
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
@@ -116,16 +130,7 @@ stat_epoch = list()
 stat_batch = list()
 stat_loss = list()
 
-# (taken from tutorial) 
-for epoch in range(num_epochs):  # loop over the dataset multiple times
-
-    if epoch == 150:
-        optimizer = optim.SGD(net.parameters(), lr=0.01)
-        print('Learning rate adapted') # TODO change learning rate (optimizer? after certain iterations)
-    if epoch == 225:
-        optimizer = optim.SGD(net.parameters(), lr=0.001)
-        print('Learning rate adapted')
-        
+def training_epoch(epoch):
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0): 
         # get the inputs
@@ -134,7 +139,7 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
         # wrap them in Variable
         if use_cuda:
             inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
-        else:    
+        else:
             inputs, labels = Variable(inputs), Variable(labels)
 
         # zero the parameter gradients
@@ -154,47 +159,71 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
             stat_loss.append(running_loss / 500)
             print('[%d, %5d] loss: %.3f' %
                   (stat_epoch[-1], stat_batch[-1], stat_loss[-1]))
+            print('[%d, %5d] loss: %.3f' %
+                  (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file = txt_file)
             sys.stdout.flush()
-            running_loss = 0.0
+
+        # Save Data to CSV
+        stats_df = pd.DataFrame(
+        {'epoch': stat_epoch,
+        'batch': stat_batch,
+        'loss': stat_loss
+        })
+
+def validation(epoch):
+    # measure accuracy (not in paper though, so could be removed), currently not working
+    correct = 0
+    total = 0
+    running_loss = 0.0
+
+    for data in testloader:
+        images, labels = data
+        if use_cuda:
+            images, labels = Variable(images.cuda()), Variable(labels.cuda())
+        else:
+            images, labels = Variable(images), Variable(labels)
+
+        outputs = net(images)
+        loss = criterion(outputs, labels)
+
+        running_loss += loss.data[0] * images.size(0)
+
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+
+        correct += (predicted == labels.data).sum()
+    print('----------------------------------------------')
+    print('----------------------------------------------', file=txt_file)
+    print('Epoch ', epoch)
+    print('Epoch ', epoch, file=txt_file)
+    print('Accuracy of the NPTN network on the 10000 test images: %d %%' % (
+        100 * correct / total))
+    print('Accuracy of the NPTN network on the 10000 test images: %d %%' % (
+        100 * correct / total), file=txt_file)
+    print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
+    print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0],
+          file=txt_file)
+
+# (taken from tutorial)
+for epoch in range(num_epochs):  # loop over the dataset multiple times
+
+    if epoch == 150:
+        optimizer = optim.SGD(net.parameters(), lr=0.01)
+        print('Learning rate adapted') # TODO change learning rate (optimizer? after certain iterations)
+    if epoch == 225:
+        optimizer = optim.SGD(net.parameters(), lr=0.001)
+        print('Learning rate adapted')
+    
+    # call training epoch once
+    training_epoch(epoch)
+    
+    # call validation batch every 5th epoch
+    if epoch + 1 % 5 == 0:
+        validation(epoch)
 
 print('Finished Training')
 
-# Save Data to CSV
-stats_df = pd.DataFrame(
-    {'epoch': stat_epoch,
-     'batch': stat_batch,
-     'loss': stat_loss
-    })
-    
-stats_df.to_csv(file_name)
 
-################       Test the network        ##########################
-
-
-# measure accuracy (not in paper though, so could be removed), currently not working
-correct = 0
-total = 0
-running_loss = 0.0
-
-for data in testloader:
-    images, labels = data
-    if use_cuda:
-        images, labels = Variable(images.cuda()), Variable(labels.cuda())
-    else:    
-        images, labels = Variable(images), Variable(labels)
-
-    outputs = net(images)
-    loss = criterion(outputs, labels)
-    
-    
-    running_loss += loss.data[0] * images.size(0)
-    
-    _, predicted = torch.max(outputs.data, 1)
-    total += labels.size(0)
-
-    correct += (predicted == labels.data).sum()
-
-print('Accuracy of the NPTN network on the 10000 test images: %d %%' % (
-    100 * correct / total))
-print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
+stats_df.to_csv(csv_file_name)
+txt_file.close()
 
