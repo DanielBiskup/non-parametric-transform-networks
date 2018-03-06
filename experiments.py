@@ -53,9 +53,18 @@ if not os.path.exists(out_dir):
 if not os.path.exists(experiment_out_dir):
    os.makedirs(experiment_out_dir)
 
-csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv")
 txt_file_name = os.path.join( experiment_out_dir, spec_string + ".txt")
+csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv")
+validation_csv_file_name = os.path.join( experiment_out_dir, spec_string + "_VALIDATION.csv")
+
+csv_file = open(csv_file_name, "w", 1)
 txt_file = open(txt_file_name, "w", 1)
+validation_csv_file = open(validation_csv_file_name, "w", 1)
+
+print('batch,epoch,loss', file=csv_file)
+print('epoch,accuracy,validationNLLLoss', file=validation_csv_file)
+
+#0,500,1,2.1207124457359314
 ###############   Test if you can use the GPU   ################
 
 use_cuda = False
@@ -222,6 +231,7 @@ def training_epoch(epoch):
             print('[%d, %5d] loss: %.3f' %
                   (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file = txt_file)
             sys.stdout.flush()
+            print('%i,%i,%.3f' % (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file=csv_file)
 
             # update plot
             viz.line(
@@ -264,11 +274,15 @@ def validation(epoch):
     print('Epoch ', epoch)
     print('Epoch ', epoch, file=txt_file)
     accuracy = (100 * correct / total)
+    NLLLoss = running_loss /(testloader.dataset.test_data.shape[0]/batch_size)
     print('Accuracy of the NPTN network on the 10000 test images: %d %%' % accuracy)
     print('Accuracy of the NPTN network on the 10000 test images: %d %%' % accuracy, file=txt_file)
-    print('NLLLoss = ', running_loss /(testloader.dataset.test_data.shape[0]/batch_size))
-    print('NLLLoss = ', running_loss /(testloader.dataset.test_data.shape[0]/batch_size),
+    print('NLLLoss = ', NLLLoss)
+    print('NLLLoss = ', NLLLoss,
           file=txt_file)
+
+    #Save CSV: #
+    print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=validation_csv_file)
     
     # update plot
     viz.line(
@@ -317,14 +331,9 @@ print('Finished Training')
 
 net.eval() # set to evaluation mode
 
-# Save Data to CSV
-stats_df = pd.DataFrame(
-{'epoch': stat_epoch,
-'batch': stat_batch,
-'loss': stat_loss
-})
-stats_df.to_csv(csv_file_name)
 txt_file.close()
+csv_file.close()
+validation_csv_file.close()
 
 # Save the model:
 model_file_name = os.path.join( experiment_out_dir, spec_string + ".final_model")
