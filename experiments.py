@@ -103,13 +103,32 @@ win = viz.line(
             xlabel='Batch',
             ylabel='Loss',
             #ytype='log',
-            title=spec_string,
+            title=spec_string + ' NLLLoss',
             marginleft=30,
             marginright=30,
             marginbottom=80,
             margintop=30,
         )
 )
+    
+winACC = viz.line(
+    Y=np.array([0]), name='training',
+    opts=dict(
+            fillarea=False,
+            showlegend=True,
+            width=800,
+            height=800,
+            xlabel='Batch',
+            ylabel='Loss',
+            #ytype='log',
+            title=spec_string + ' Accuracy',
+            marginleft=30,
+            marginright=30,
+            marginbottom=80,
+            margintop=30,
+        )
+)
+    
 
 #############        Network definition       ####################
 
@@ -211,7 +230,8 @@ def training_epoch(epoch):
                 update='append',
                 opts=dict(showlegend=True)
             )
-
+            
+            
             running_loss = 0.0
 
 
@@ -245,8 +265,8 @@ def validation(epoch):
         100 * correct / total))
     print('Accuracy of the NPTN network on the 10000 test images: %d %%' % (
         100 * correct / total), file=txt_file)
-    print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
-    print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0],
+    print('NLLLoss = ', running_loss /testloader.dataset.test_data.shape[0])
+    print('NLLLoss = ', running_loss /testloader.dataset.test_data.shape[0],
           file=txt_file)
     
     # update plot
@@ -258,6 +278,14 @@ def validation(epoch):
         update='append',
     opts=dict(showlegend=True))
 
+    viz.line(
+        X=np.array([epoch]), 
+        Y=np.array([100 * correct / total]),
+        win=winACC,
+        name='test',
+        update='append',
+    opts=dict(showlegend=True))
+    
 # (taken from tutorial)
 for epoch in range(num_epochs):  # loop over the dataset multiple times
 
