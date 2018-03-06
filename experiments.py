@@ -10,7 +10,7 @@ first experiment
 
 
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import torch
 import torchvision
 from torchvision import datasets, transforms
@@ -26,7 +26,7 @@ import datetime
 import time
 
 import argparse
-
+from visdom import Visdom
 
 parser = argparse.ArgumentParser(description='GLRC stage 1')
 parser.add_argument('-conv_1', '--conv_1_features', default = 24, type=int)
@@ -64,6 +64,21 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=4,
 classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
+#######    Opening Connection to Visdom server and initialize plots   #########
+
+
+viz = Visdom()
+
+startup_sec = 1
+while not viz.check_connection() and startup_sec > 0:
+    time.sleep(0.1)
+    startup_sec -= 0.1
+assert viz.check_connection(), 'No connection could be formed quickly'
+
+
+win = viz.line(
+    Y=np.array([0]), name='training'
+)
 
 
 #############        Network definition       ####################
@@ -178,7 +193,18 @@ def training_epoch(epoch):
             print('[%d, %5d] loss: %.3f' %
                   (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file = txt_file)
             sys.stdout.flush()
+
+            # update plot
+            viz.line(
+                X=np.array([epoch + i*0.04]),
+                Y=np.array(stat_loss[-1]),
+                win=win,
+                name='training',
+                update='append'
+            )
+
             running_loss = 0.0
+
 
 def validation(epoch):
     # measure accuracy (not in paper though, so could be removed), currently not working
@@ -226,6 +252,8 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
     
     # call training epoch once
     training_epoch(epoch)
+    
+    
     
     # call validation batch every 5th epoch
     if epoch + 1 % 5 == 0:
