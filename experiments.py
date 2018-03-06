@@ -21,6 +21,9 @@ import torch.optim as optim
 from network import NPTN
 import pandas as pd
 import sys
+import os # for os.path.join()
+import datetime
+import time
 
 import argparse
 
@@ -29,9 +32,9 @@ parser = argparse.ArgumentParser(description='GLRC stage 1')
 parser.add_argument('-conv_1', '--conv_1_features', default = 24, type=int)
 parser.add_argument('-g', '--group_size', default = 2, type=int)
 parser.add_argument('-k', '--kernel_size', default = 5, type=int)
+parser.add_argument('-o', '--out_dir', default = "output", type=str) # TODO: specify output directory for output files
 
 args = parser.parse_args()
-
 
 ###############   Test if you can use the GPU   ################
 
@@ -106,15 +109,28 @@ class twoLayeredNPTN(nn.Module):
 conv_1_features = args.conv_1_features
 G = args.group_size
 kernel_size = args.kernel_size
+out_dir = args.out_dir
 
 netN24G2 = twoLayeredNPTN(conv_1_features, G, kernel_size)
 net = netN24G2
 
 if use_cuda:
     net.cuda()
-csv_file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".csv"
-txt_file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".txt"
-txt_file = open(txt_file_name, "w")
+
+ts = time.time()
+timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+spec_string = str(timestamp) + ' Conv' + str(conv_1_features) + " Group" + str(G) + " Kernel" + str(kernel_size)
+out_dir = args.out_dir
+experiment_out_dir = os.path.join(out_dir, spec_string)
+
+if not os.path.exists(out_dir):
+   os.makedirs(out_dir)
+if not os.path.exists(experiment_out_dir):
+   os.makedirs(experiment_out_dir)
+
+csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv")
+txt_file_name = os.path.join( experiment_out_dir, spec_string + ".txt")
+txt_file = open(txt_file_name, "w" )
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
@@ -124,7 +140,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 ############## Train the network  ######################
 
 
-num_epochs = 1 # paper: 300
+num_epochs = 300 # paper: 300
 
 stat_epoch = list()
 stat_batch = list()
