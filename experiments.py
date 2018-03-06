@@ -87,11 +87,13 @@ classes = ('plane', 'car', 'bird', 'cat',
 #######    Opening Connection to Visdom server and initialize plots   #########
 viz = Visdom()
 
+'''
 startup_sec = 1
 while not viz.check_connection() and startup_sec > 0:
-    time.sleep(0.1)
+    time.sleep(1)
     startup_sec -= 0.1
 assert viz.check_connection(), 'No connection could be formed quickly'
+'''
 
 win = viz.line(
     Y=np.array([0]), name='training',
@@ -252,8 +254,7 @@ def validation(epoch):
         outputs = net(images)
         loss = criterion(outputs, labels)
 
-        running_loss += loss.data[0] * images.size(0)
-
+        running_loss += loss.data[0] # * images.size(0)
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
 
@@ -262,25 +263,24 @@ def validation(epoch):
     print('----------------------------------------------', file=txt_file)
     print('Epoch ', epoch)
     print('Epoch ', epoch, file=txt_file)
-    print('Accuracy of the NPTN network on the 10000 test images: %d %%' % (
-        100 * correct / total))
-    print('Accuracy of the NPTN network on the 10000 test images: %d %%' % (
-        100 * correct / total), file=txt_file)
-    print('NLLLoss = ', running_loss /testloader.dataset.test_data.shape[0])
-    print('NLLLoss = ', running_loss /testloader.dataset.test_data.shape[0],
+    accuracy = (100 * correct / total)
+    print('Accuracy of the NPTN network on the 10000 test images: %d %%' % accuracy)
+    print('Accuracy of the NPTN network on the 10000 test images: %d %%' % accuracy, file=txt_file)
+    print('NLLLoss = ', running_loss /(testloader.dataset.test_data.shape[0]/batch_size))
+    print('NLLLoss = ', running_loss /(testloader.dataset.test_data.shape[0]/batch_size),
           file=txt_file)
     
     # update plot
     viz.line(
-        X=np.array([epoch]), 
-        Y=np.array([running_loss /testloader.dataset.test_data.shape[0]]),
+        X=np.array([epoch + 1]), 
+        Y=np.array([running_loss /(testloader.dataset.test_data.shape[0]/batch_size)]),
         win=win,
         name='test',
         update='append',
     opts=dict(showlegend=True))
 
     viz.line(
-        X=np.array([epoch]), 
+        X=np.array([epoch + 1]), 
         Y=np.array([100 * correct / total]),
         win=winACC,
         name='test',
@@ -288,8 +288,10 @@ def validation(epoch):
     opts=dict(showlegend=True))
     
     net.train()  # set network back in training mode
+    return accuracy
     
 # (taken from tutorial)
+best_accuracy = 0.0
 for epoch in range(num_epochs):  # loop over the dataset multiple times
 
     if epoch == 150:
@@ -303,8 +305,13 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
     training_epoch(epoch)
     
     # call validation batch every 5th epoch
-    if epoch + 1 % 5 == 0:
-        validation(epoch)
+    if (epoch + 1) % 1 == 0:
+        accuracy = validation(epoch)
+        # Save the model:
+        if ( accuracy > best_accuracy ):
+            best_accuracy = accuracy
+            model_file_name = os.path.join( experiment_out_dir, spec_string + ".model")
+            torch.save(net, model_file_name)
 
 print('Finished Training')
 
@@ -319,3 +326,6 @@ stats_df = pd.DataFrame(
 stats_df.to_csv(csv_file_name)
 txt_file.close()
 
+# Save the model:
+model_file_name = os.path.join( experiment_out_dir, spec_string + ".final_model")
+torch.save(net, model_file_name)
