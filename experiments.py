@@ -130,7 +130,7 @@ if use_cuda:
     net.cuda()
 csv_file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".csv"
 txt_file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".txt"
-txt_file = open(txt_file_name)
+txt_file = open(txt_file_name, "w")
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
@@ -140,7 +140,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 ############## Train the network  ######################
 
 
-num_epochs = 2 # paper: 300
+num_epochs = 1 # paper: 300
 
 stat_epoch = list()
 stat_batch = list()
@@ -178,7 +178,8 @@ def training_epoch(epoch):
             print('[%d, %5d] loss: %.3f' %
                   (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file = txt_file)
             sys.stdout.flush()
-                    # update plot
+
+            # update plot
             viz.line(
                 X=np.array([epoch + i*0.04]),
                 Y=np.array(stat_loss[-1]),
@@ -186,14 +187,9 @@ def training_epoch(epoch):
                 name='training',
                 update='append'
             )
-        running_loss = 0
 
-        # Save Data to CSV
-        stats_df = pd.DataFrame(
-        {'epoch': stat_epoch,
-        'batch': stat_batch,
-        'loss': stat_loss
-        })
+            running_loss = 0.0
+
 
 def validation(epoch):
     # measure accuracy (not in paper though, so could be removed), currently not working
@@ -246,11 +242,17 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
     
     # call validation batch every 5th epoch
     if epoch + 1 % 5 == 0:
+        print("aaa")
         validation(epoch)
 
 print('Finished Training')
 
-
+# Save Data to CSV
+stats_df = pd.DataFrame(
+{'epoch': stat_epoch,
+'batch': stat_batch,
+'loss': stat_loss
+})
 stats_df.to_csv(csv_file_name)
 txt_file.close()
 
