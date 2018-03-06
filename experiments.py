@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -19,7 +20,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from network import NPTN
 import pandas as pd
-
+import sys
 
 ###############   Test if you can use the GPU   ################
 
@@ -91,12 +92,15 @@ class twoLayeredNPTN(nn.Module):
         return x
 
 
-netN24G2 = twoLayeredNPTN(16,3,7)
+conv_1_features = 24
+G = 2
+kernel_size = 5
+netN24G2 = twoLayeredNPTN(conv_1_features, G, kernel_size)
 net = netN24G2
 
 if use_cuda:
     net.cuda()
-
+file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".csv"
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
@@ -145,14 +149,13 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
         # print statistics
         running_loss += loss.data[0]
         if i % 500 == 499:
-            print('Start')
             stat_epoch.append(epoch + 1)
             stat_batch.append(i + 1)
             stat_loss.append(running_loss / 500)
             print('[%d, %5d] loss: %.3f' %
                   (stat_epoch[-1], stat_batch[-1], stat_loss[-1]))
+            sys.stdout.flush()
             running_loss = 0.0
-            print('Stop')
 
 print('Finished Training')
 
@@ -163,7 +166,7 @@ stats_df = pd.DataFrame(
      'loss': stat_loss
     })
     
-stats_df.to_csv("stats.csv")
+stats_df.to_csv(file_name)
 
 ################       Test the network        ##########################
 
@@ -194,3 +197,4 @@ for data in testloader:
 print('Accuracy of the NPTN network on the 10000 test images: %d %%' % (
     100 * correct / total))
 print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
+

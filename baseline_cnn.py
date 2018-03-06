@@ -17,7 +17,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from network import NPTN
-
+import pandas as pd
+import sys
 
 ###############   Test if you can use the GPU   ################
 
@@ -87,8 +88,10 @@ class twoLayeredCNN(nn.Module):
         #print('after softmax ', x.size())
         return x
 
+kernel_size = 7
+file_name = 'cnn_ks=' + str(kernel_size) + '.csv'
 
-netN24G2 = twoLayeredCNN(filtersize=7)
+netN24G2 = twoLayeredCNN(filtersize=kernel_size)
 net = netN24G2
 
 if use_cuda:
@@ -102,11 +105,13 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 
 ############## Train the network  ######################
 
-<<<<<<< HEAD
-num_epochs = 1 # paper: 300
-=======
+
+stat_epoch = list()
+stat_batch = list()
+stat_loss = list()
+
+
 num_epochs = 300 # paper: 300
->>>>>>> e7f523a7271e2de1052c5c0aedfc6cc09268bad3
 
 # (taken from tutorial) 
 for epoch in range(num_epochs):  # loop over the dataset multiple times
@@ -147,6 +152,15 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
 
 print('Finished Training')
 
+# Save Data to CSV
+stats_df = pd.DataFrame(
+    {'epoch': stat_epoch,
+     'batch': stat_batch,
+     'loss': stat_loss
+    })
+    
+    
+
 ################       Test the network        ##########################
 
 
@@ -174,4 +188,7 @@ for data in testloader:
 
 print('Accuracy of the CNN network on the 10000 test images: %d %%' % (
     100 * correct / total))
-print('Ćross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
+print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
+
+
+stats_df.to_csv(file_name)
