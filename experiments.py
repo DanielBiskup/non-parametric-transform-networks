@@ -184,7 +184,7 @@ def training_epoch(epoch):
 
         # print statistics
         running_loss += loss.data[0]
-        if i % 500 == 499:
+        if i % 5 == 4:
             stat_epoch.append(epoch + 1)
             stat_batch.append(i + 1)
             stat_loss.append(running_loss / 500)
@@ -196,11 +196,12 @@ def training_epoch(epoch):
 
             # update plot
             viz.line(
-                X=np.array([epoch + i*0.04]),
-                Y=np.array(stat_loss[-1]),
+                X=np.array([epoch + i*0.04]), # values particular to frequency of outputting
+                Y=np.array([stat_loss[-1]]),
                 win=win,
                 name='training',
-                update='append'
+                update='append',
+                opts=dict(showlegend=True)
             )
 
             running_loss = 0.0
@@ -239,6 +240,15 @@ def validation(epoch):
     print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0])
     print('Cross entropy loss = ', running_loss /testloader.dataset.test_data.shape[0],
           file=txt_file)
+    
+    # update plot
+    viz.line(
+        X=np.array([epoch]), 
+        Y=np.array([running_loss /testloader.dataset.test_data.shape[0]]),
+        win=win,
+        name='test',
+        update='append',
+    opts=dict(showlegend=True))
 
 # (taken from tutorial)
 for epoch in range(num_epochs):  # loop over the dataset multiple times
@@ -257,7 +267,6 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
     
     # call validation batch every 5th epoch
     if epoch + 1 % 5 == 0:
-        print("aaa")
         validation(epoch)
 
 print('Finished Training')
