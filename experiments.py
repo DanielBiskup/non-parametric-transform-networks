@@ -114,7 +114,7 @@ if use_cuda:
     net.cuda()
 csv_file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".csv"
 txt_file_name = str(conv_1_features) + "__" + str(G) + "__" + str(kernel_size) + ".txt"
-txt_file = open(txt_file_name)
+txt_file = open(txt_file_name, "w")
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
@@ -162,6 +162,7 @@ def training_epoch(epoch):
             print('[%d, %5d] loss: %.3f' %
                   (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file = txt_file)
             sys.stdout.flush()
+            running_loss = 0.0
 
         # Save Data to CSV
         stats_df = pd.DataFrame(
@@ -219,6 +220,7 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
     
     # call validation batch every 5th epoch
     if epoch + 1 % 5 == 0:
+        print("aaa")
         validation(epoch)
 
 print('Finished Training')
