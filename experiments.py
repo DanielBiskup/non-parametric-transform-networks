@@ -32,10 +32,15 @@ parser = argparse.ArgumentParser(description='GLRC stage 1')
 parser.add_argument('-conv_1', '--conv_1_features', default = 24, type=int)
 parser.add_argument('-g', '--group_size', default = 2, type=int)
 parser.add_argument('-k', '--kernel_size', default = 5, type=int)
-parser.add_argument('-o', '--out_dir', default = "output", type=str) # TODO: specify output directory for output files
+parser.add_argument('-b', '--batch_size', default = 4, type=int)
+parser.add_argument('-o', '--out_dir', default = "output", type=str)
 
 args = parser.parse_args()
-
+conv_1_features = args.conv_1_features
+G = args.group_size
+kernel_size = args.kernel_size
+out_dir = args.out_dir
+batch_size = args.batch_size
 ###############   Test if you can use the GPU   ################
 
 use_cuda = False
@@ -45,6 +50,9 @@ if torch.cuda.is_available():
 
 ###########   loading and preprocessing the data    ############
 
+
+
+
 # load dataset CIFAR10, normalize, crop and flip as in paper
 transform = transforms.Compose(
     [transforms.RandomCrop(32, padding=4),
@@ -53,12 +61,12 @@ transform = transforms.Compose(
      transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
                                         download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
                                           shuffle=True, num_workers=2)
 
 testset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                        download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=4,
+testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                          shuffle=False, num_workers=2)
 
 classes = ('plane', 'car', 'bird', 'cat',
@@ -121,10 +129,7 @@ class twoLayeredNPTN(nn.Module):
         return x
 
 
-conv_1_features = args.conv_1_features
-G = args.group_size
-kernel_size = args.kernel_size
-out_dir = args.out_dir
+
 
 netN24G2 = twoLayeredNPTN(conv_1_features, G, kernel_size)
 net = netN24G2
@@ -184,7 +189,7 @@ def training_epoch(epoch):
 
         # print statistics
         running_loss += loss.data[0]
-        if i % 5 == 4:
+        if i % 500 == 499:
             stat_epoch.append(epoch + 1)
             stat_batch.append(i + 1)
             stat_loss.append(running_loss / 500)
@@ -196,7 +201,7 @@ def training_epoch(epoch):
 
             # update plot
             viz.line(
-                X=np.array([epoch + i*0.04]), # values particular to frequency of outputting
+                X=np.array([epoch + i/(trainloader.dataset.train_data.shape[0]/batch_size)]),
                 Y=np.array([stat_loss[-1]]),
                 win=win,
                 name='training',
