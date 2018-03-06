@@ -41,6 +41,21 @@ G = args.group_size
 kernel_size = args.kernel_size
 out_dir = args.out_dir
 batch_size = args.batch_size
+
+ts = time.time()
+timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+spec_string = str(timestamp) + ' Conv' + str(conv_1_features) + " Group" + str(G) + " Kernel" + str(kernel_size)
+out_dir = args.out_dir
+experiment_out_dir = os.path.join(out_dir, spec_string)
+
+if not os.path.exists(out_dir):
+   os.makedirs(out_dir)
+if not os.path.exists(experiment_out_dir):
+   os.makedirs(experiment_out_dir)
+
+csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv")
+txt_file_name = os.path.join( experiment_out_dir, spec_string + ".txt")
+txt_file = open(txt_file_name, "w" )
 ###############   Test if you can use the GPU   ################
 
 use_cuda = False
@@ -49,9 +64,6 @@ if torch.cuda.is_available():
     print('Using CUDA')
 
 ###########   loading and preprocessing the data    ############
-
-
-
 
 # load dataset CIFAR10, normalize, crop and flip as in paper
 transform = transforms.Compose(
@@ -73,8 +85,6 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 #######    Opening Connection to Visdom server and initialize plots   #########
-
-
 viz = Visdom()
 
 startup_sec = 1
@@ -83,11 +93,23 @@ while not viz.check_connection() and startup_sec > 0:
     startup_sec -= 0.1
 assert viz.check_connection(), 'No connection could be formed quickly'
 
-
 win = viz.line(
-    Y=np.array([0]), name='training'
+    Y=np.array([0]), name='training',
+    opts=dict(
+            fillarea=False,
+            showlegend=True,
+            width=800,
+            height=800,
+            xlabel='Batch',
+            ylabel='Loss',
+            #ytype='log',
+            title=spec_string,
+            marginleft=30,
+            marginright=30,
+            marginbottom=80,
+            margintop=30,
+        )
 )
-
 
 #############        Network definition       ####################
 
@@ -128,37 +150,18 @@ class twoLayeredNPTN(nn.Module):
         #print('after softmax ', x.size())
         return x
 
-
-
-
 netN24G2 = twoLayeredNPTN(conv_1_features, G, kernel_size)
 net = netN24G2
 
 if use_cuda:
     net.cuda()
 
-ts = time.time()
-timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-spec_string = str(timestamp) + ' Conv' + str(conv_1_features) + " Group" + str(G) + " Kernel" + str(kernel_size)
-out_dir = args.out_dir
-experiment_out_dir = os.path.join(out_dir, spec_string)
-
-if not os.path.exists(out_dir):
-   os.makedirs(out_dir)
-if not os.path.exists(experiment_out_dir):
-   os.makedirs(experiment_out_dir)
-
-csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv")
-txt_file_name = os.path.join( experiment_out_dir, spec_string + ".txt")
-txt_file = open(txt_file_name, "w" )
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
 optimizer = optim.SGD(net.parameters(), lr=0.1)
 
-
 ############## Train the network  ######################
-
 
 num_epochs = 300 # paper: 300
 
@@ -267,8 +270,6 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
     
     # call training epoch once
     training_epoch(epoch)
-    
-    
     
     # call validation batch every 5th epoch
     if epoch + 1 % 5 == 0:
