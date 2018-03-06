@@ -124,7 +124,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 ############## Train the network  ######################
 
 
-num_epochs = 300 # paper: 300
+num_epochs = 1 # paper: 300
 
 stat_epoch = list()
 stat_batch = list()
@@ -163,13 +163,6 @@ def training_epoch(epoch):
                   (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file = txt_file)
             sys.stdout.flush()
             running_loss = 0.0
-
-        # Save Data to CSV
-        stats_df = pd.DataFrame(
-        {'epoch': stat_epoch,
-        'batch': stat_batch,
-        'loss': stat_loss
-        })
 
 def validation(epoch):
     # measure accuracy (not in paper though, so could be removed), currently not working
@@ -225,7 +218,12 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
 
 print('Finished Training')
 
-
+# Save Data to CSV
+stats_df = pd.DataFrame(
+{'epoch': stat_epoch,
+'batch': stat_batch,
+'loss': stat_loss
+})
 stats_df.to_csv(csv_file_name)
 txt_file.close()
 
