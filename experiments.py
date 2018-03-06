@@ -112,7 +112,7 @@ win = viz.line(
 )
     
 winACC = viz.line(
-    Y=np.array([0]), name='training',
+    Y=np.array([0]), name='test',
     opts=dict(
             fillarea=False,
             showlegend=True,
@@ -237,6 +237,8 @@ def training_epoch(epoch):
 
 def validation(epoch):
     # measure accuracy (not in paper though, so could be removed), currently not working
+    net.eval() # sets network into evaluation mode, might make difference for BatchNorm
+    
     correct = 0
     total = 0
     running_loss = 0.0
@@ -286,6 +288,8 @@ def validation(epoch):
         update='append',
     opts=dict(showlegend=True))
     
+    net.train()  # set network back in training mode
+    
 # (taken from tutorial)
 for epoch in range(num_epochs):  # loop over the dataset multiple times
 
@@ -304,6 +308,8 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
         validation(epoch)
 
 print('Finished Training')
+
+net.eval() # set to evaluation mode
 
 # Save Data to CSV
 stats_df = pd.DataFrame(
