@@ -96,7 +96,7 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 #######    Opening Connection to Visdom server and initialize plots   #########
-viz = Visdom()
+viz = Visdom(env = spec_string)
 
 '''
 startup_sec = 1
@@ -156,12 +156,12 @@ class twoLayeredNPTN(nn.Module):
         self.pool = nn.MaxPool2d(2)
         self.prelu = nn.PReLU()
         # second layer
-        self.nptn2 = NPTN(N, N, G, filtersize)
-        self.batchnorm2 = nn.BatchNorm2d(N) 
+        self.nptn2 = NPTN(N, 16, G, filtersize)
+        self.batchnorm2 = nn.BatchNorm2d(16) 
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
          
-        self.fc1 = nn.Linear(N * self.final_layer_dim, 10)
+        self.fc1 = nn.Linear(16 * self.final_layer_dim, 10)
 
     def forward(self, x):
         x = self.nptn(x)
@@ -176,7 +176,7 @@ class twoLayeredNPTN(nn.Module):
         x = self.pool2(self.prelu2(x))
         #print('shape second layer ', x.size())
         
-        x = x.view(-1, self.N * self.final_layer_dim)
+        x = x.view(-1, 16 * self.final_layer_dim)
         #print('shape second layer ', x.size())
         x = F.log_softmax(self.fc1(x), dim=1)
         #print('after softmax ', x.size())
