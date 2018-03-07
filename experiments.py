@@ -232,6 +232,7 @@ def training_epoch(epoch):
                   (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file = txt_file)
             sys.stdout.flush()
             print('%i,%i,%.3f' % (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file=csv_file)
+            # TODO DELETE STAT_EPOCH
 
             # update plot
             viz.line(
