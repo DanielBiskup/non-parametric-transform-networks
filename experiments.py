@@ -44,7 +44,9 @@ batch_size = args.batch_size
 
 ts = time.time()
 timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-spec_string = str(timestamp) + ' Conv' + str(conv_1_features) + " Group" + str(G) + " Kernel" + str(kernel_size)
+timestamp.replace(':','_').replace(' ','_').replace('-','_')
+spec_string = str(timestamp) + '_Conv' + str(conv_1_features) + "_Group" + str(G) + "_Kernel" + str(kernel_size)
+
 out_dir = args.out_dir
 experiment_out_dir = os.path.join(out_dir, spec_string)
 
