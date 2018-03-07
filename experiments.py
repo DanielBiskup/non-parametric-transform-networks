@@ -94,7 +94,7 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 #######    Opening Connection to Visdom server and initialize plots   #########
-viz = Visdom()
+viz = Visdom(env = spec_string)
 
 '''
 startup_sec = 1
