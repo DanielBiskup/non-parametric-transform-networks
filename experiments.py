@@ -49,6 +49,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
+# parser.add_argument('-c', '--config', default = "MNIST_rot_60.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 args = parser.parse_args()
@@ -106,67 +107,82 @@ spec_string = ss
 
 ### Training Data Transforms
 transform_train_list = [
-     transforms.RandomHorizontalFlip(), 
-     transforms.ToTensor()]
+     transforms.RandomHorizontalFlip()]
 
 # Train:Translation
 if 'translation_train' in d:
     translation_train = d['translation_train']
+    transform_train_list.append( transforms.RandomCrop(32, padding=translation_train) )
 else:
-    translation_train = 2
-transform_train_list.append( transforms.RandomCrop(32, padding=translation_train) )
+    pass
+
 
 # Train:Rotation
 if 'rotation_train' in d:
     rotation_train = d['rotation_train']
     transform_train_list.append( transforms.RandomRotation(rotation_train) ) 
 else:
-    pass # no rotation
+    pass
+
+transform_train_list.append(transforms.ToTensor())
 
 # Train:Normalization
 if d['dataset'] == 'cifar10':
     transform_train_list.append( transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
 elif d['dataset'] == 'mnist':
     transform_train_list.append(transforms.Normalize((0.1307,), (0.3081,)))
-    
-transform_test = transforms.Compose( transform_train_list )
+
+transform_train = transforms.Compose( transform_train_list )
 
 ### Test Data Transforms
 transform_test_list = [
-     transforms.RandomHorizontalFlip(), 
-     transforms.ToTensor()]
+     transforms.RandomHorizontalFlip()]
 
 # Don't use translation or rotation during test
 if 'rotation_test' in d:
     rotation_test = d['rotation_test']
+    transform_test_list.append( transforms.RandomRotation(rotation_test) )
 else:
-    rotation_test = rotation_train
-transform_train_list.append( transforms.RandomRotation(rotation_train) )
+    pass
 
 # Test:Translation       
 if 'translation_test' in d:
     translation_test = d['translation_test']
+    transform_test_list.append( transforms.RandomCrop(32, padding=translation_test) )
 else:
-    translation_test = translation_train
-transform_train_list.append( transforms.RandomCrop(32, padding=translation_test) )
+    pass
+
+transform_test_list.append(transforms.ToTensor()) 
 
 # Test:Normalization
 if d['dataset'] == 'cifar10':
     transform_test_list.append( transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
 elif d['dataset'] == 'mnist':
     transform_test_list.append(transforms.Normalize((0.1307,), (0.3081,)))
-    
+
 transform_test = transforms.Compose( transform_test_list )
 
 ##### Load Data for Train and Test:
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                            download=True, transform=transform_test)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                          shuffle=True, num_workers=2)
-testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                       download=True, transform=transform_test)
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                         shuffle=False, num_workers=2)
+num_workers = 4
+
+if d['dataset'] == 'cifar10':
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform_train)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                              shuffle=True, num_workers=num_workers)
+    testset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                           download=True, transform=transform_test)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
+                                             shuffle=False, num_workers=num_workers)
+elif d['dataset'] == 'mnist':
+    trainset = torchvision.datasets.MNIST(root='./data', train=True,
+                                                download=True, transform=transform_train)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                              shuffle=True, num_workers=num_workers)
+    testset = torchvision.datasets.MNIST(root='./data', train=False,
+                                           download=True, transform=transform_test)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
+                                             shuffle=False, num_workers=num_workers)
 
 ###Shared code: ###############################################################
 ###############################################################################
