@@ -51,8 +51,12 @@ test_loader = torch.utils.data.DataLoader(
 # show a few images, taken from tutorial
 
 # get some random training images
-dataiter = iter(train_loader)
-images, labels = dataiter.next()
+#dataiter = iter(train_loader)
+#images, labels = dataiter.next()
 
 # show images
-imshow(torchvision.utils.make_grid(images))    
+#imshow(torchvision.utils.make_grid(images))    
+    
+    
+    
+    

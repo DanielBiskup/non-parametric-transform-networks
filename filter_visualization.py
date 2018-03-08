@@ -17,6 +17,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 #from baseline_cnn import twoLayeredCNN
+#from /../pytorch-cnn-visualizations/src/cnn_layer_visualization import CNNLayerVisualization
 
 def imshow(img):
     img = img *0.1307 + 0.3081     # unnormalize for MNIST
