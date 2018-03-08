@@ -127,7 +127,7 @@ else:
 if d['dataset'] == 'cifar10':
     transform_train_list.append( transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
 elif d['dataset'] == 'mnist':
-    transform_train_list(transforms.Normalize((0.1307,), (0.3081,)))
+    transform_train_list.append(transforms.Normalize((0.1307,), (0.3081,)))
     
 transform_test = transforms.Compose( transform_train_list )
 
@@ -154,7 +154,7 @@ transform_train_list.append( transforms.RandomCrop(32, padding=translation_test)
 if d['dataset'] == 'cifar10':
     transform_test_list.append( transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
 elif d['dataset'] == 'mnist':
-    transform_test_list(transforms.Normalize((0.1307,), (0.3081,)))
+    transform_test_list.append(transforms.Normalize((0.1307,), (0.3081,)))
     
 transform_test = transforms.Compose( transform_test_list )
 
