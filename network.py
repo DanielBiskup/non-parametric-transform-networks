@@ -60,31 +60,46 @@ class twoLayeredNPTN(nn.Module):
         self.batchnorm2 = nn.BatchNorm2d(16) 
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
-        self.fc1 = nn.Linear(16 * self.final_layer_dim, 10)
+        self.fc1 = nn.Linear(16 * 4 * 4, 10) # TODO
 
     def forward(self, x):
+        #print('============================================================')
+        #print('the input x to the network ', x.size())
         x = self.nptn(x)
         #print('x after nptn ', x.size())
         x = self.batchnorm(x)
         #print('batchnorm ', x.size())
-        #x = F.prelu(self.nptn(x), 0.1) 
+        #x = F.prelu(self.nptn(x), 0.1) # TODO: What about this?
         x = self.pool(self.prelu(x))
         #print('shape first layer ', x.size())
-        x = self.batchnorm2(self.nptn2(x))
+        x = self.nptn2(x)
+        #print('x after nptn2 ', x.size())
+        x = self.batchnorm2(x)
         #print('after batchnorm 2 ', x.size())
         x = self.pool2(self.prelu2(x))
         #print('shape second layer ', x.size())
         
-        x = x.view(-1, 16 * self.final_layer_dim)
+        x = x.view(-1, 16 * 4 * 4) # TODO
+        #print('shape second layer after flattening', x.size())
+        
         # BUG DESCRIPTION:
         # Runtime Error:"invalid argument 2: size '[-1 x 400]' is invalid for input with 16384 elements"
         # when calling experiment with MNIST_rot_60.yaml
         # Maybe find information here: http://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html#sphx-glr-beginner-blitz-neural-networks-tutorial-py
         
-        #print('shape second layer ', x.size())
-        x = F.log_softmax(self.fc1(x), dim=1)
+        x = self.fc1(x)
+        #print('after Linear layer ', x.size()) 
+        x = F.log_softmax(x, dim=1)
         #print('after softmax ', x.size())
         return x
+    
+    def num_flat_features(self, x):
+        #copied from: http://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html#sphx-glr-beginner-blitz-neural-networks-tutorial-py
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
     
 class twoLayeredCNN(nn.Module):
     def __init__(self, filtersize, in_channels=3, N1=48, N2=16):

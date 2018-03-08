@@ -118,7 +118,7 @@ def is_set(d,key):
 # Train:Translation
 if is_set(d,'translation_train'):
     translation_train = d['translation_train']
-    transform_train_list.append( transforms.RandomCrop(32, padding=translation_train) )
+    transform_train_list.append( transforms.RandomCrop(28, padding=translation_train) ) # TODO: Make 28(Mnist) and 32(CIFAR10) variables.
 else:
     pass
 
@@ -154,7 +154,7 @@ else:
 # Test:Translation       
 if is_set(d,'translation_test'):
     translation_test = d['translation_test']
-    transform_test_list.append( transforms.RandomCrop(32, padding=translation_test) )
+    transform_test_list.append( transforms.RandomCrop(28, padding=translation_test) ) # TODO: Make 28(Mnist) and 32(CIFAR10) variables.
 else:
     pass
 
@@ -332,6 +332,7 @@ def training_epoch(epoch):
             )
             
             running_loss = 0.0
+        
 
 def validation(epoch):
     # measure accuracy (not in paper though, so could be removed), currently not working
@@ -341,6 +342,7 @@ def validation(epoch):
     total = 0
     running_loss = 0.0
 
+    
     for data in testloader:
         images, labels = data
         if use_cuda:
