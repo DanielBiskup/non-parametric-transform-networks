@@ -22,6 +22,7 @@ import time
 import argparse
 from visdom import Visdom
 import yaml
+#from shutil import copyfile
 
 ## import the networks:
 from network import twoLayeredNPTN
@@ -56,7 +57,8 @@ ts = time.time()
 timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 timestamp = timestamp.replace(':','_').replace(' ','_').replace('-','_')
 
-with open("x.yaml", 'r') as stream:
+yaml_file_name = args.config
+with open(yaml_file_name, 'r') as stream:
     try:
         d = yaml.load(stream)
     except yaml.YAMLError as exc:
@@ -173,10 +175,18 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
 out_dir = args.out_dir
 experiment_out_dir = os.path.join(out_dir, spec_string)
 
+#HACKY__
+experiment_out_dir = experiment_out_dir + '__rotation' + str(d['rotation_train'])
+#__HACKY
+
+
+#copyfile(yaml_file_name, experiment_out_dir + '/')
+
 if not os.path.exists(out_dir):
    os.makedirs(out_dir)
 if not os.path.exists(experiment_out_dir):
    os.makedirs(experiment_out_dir)
+
 
 txt_file_name = os.path.join( experiment_out_dir, spec_string + ".txt")
 csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv")
