@@ -13,7 +13,7 @@ batchsize : 64
 dataset : mnist # 'cifar10' or 'mnist'
 # optional parameters:
 translation_train : 2 # default = 2
-rotation_train : 60 # default = 0
+rotation_train : 90 # default = 0
 
 translation_test : 0 # default = translation_train
-rotation_test : 60 # default = rotation_train
+rotation_test : 90 # default = rotation_train
