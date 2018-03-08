@@ -225,21 +225,20 @@ def training_epoch(epoch):
         # print statistics
         running_loss += loss.data[0]
         if i % 500 == 499:
-            stat_epoch.append(epoch + 1)
-            stat_batch.append(i + 1)
-            stat_loss.append(running_loss / 500)
+            stat_epoch = epoch + 1
+            stat_batch = i + 1
+            stat_loss = running_loss / 500
             print('[%d, %5d] loss: %.3f' %
-                  (stat_epoch[-1], stat_batch[-1], stat_loss[-1]))
+                  (stat_epoch, stat_batch, stat_loss))
             print('[%d, %5d] loss: %.3f' %
-                  (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file = txt_file)
+                  (stat_epoch, stat_batch, stat_loss), file = txt_file)
             sys.stdout.flush()
-            print('%i,%i,%.3f' % (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file=csv_file)
-            # TODO DELETE STAT_EPOCH
+            print('%i,%i,%.3f' % (stat_epoch, stat_batch, stat_loss), file=csv_file)
 
             # update plot
             viz.line(
                 X=np.array([epoch + i/(trainloader.dataset.train_data.shape[0]/batch_size)]),
-                Y=np.array([stat_loss[-1]]),
+                Y=np.array([stat_loss]),
                 win=win,
                 name='training',
                 update='append',
