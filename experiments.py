@@ -19,7 +19,7 @@ import sys
 import os
 import datetime
 import time
-#import argparse
+import argparse
 from visdom import Visdom
 import yaml
 
@@ -46,6 +46,11 @@ out_dir = args.out_dir
 batch_size = args.batch_size
 net_type = args.network_type
 '''
+
+parser = argparse.ArgumentParser(description='Experiment')
+parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-o', '--out_dir', default = "output", type=str)
+args = parser.parse_args()
 
 ts = time.time()
 timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
@@ -93,74 +98,73 @@ spec_string = ss
 
 ###########   loading and preprocessing the data    ############
 
-if 'rotation_train' in d:
-    rotation_train = d['rotation_train']
-else:
-    rotation_train = 0
-    
-if 'rotation_test' in d:
-    rotation_test = d['rotation_test']
-else:
-    rotation_test = rotation_train
-    
+# TODO add num_workers
+
+# load dataset CIFAR10, normalize, crop and flip as in paper
+
+### Training Data Transforms
+transform_train_list = [
+     transforms.RandomHorizontalFlip(), 
+     transforms.ToTensor()]
+
+# Train:Translation
 if 'translation_train' in d:
     translation_train = d['translation_train']
 else:
     translation_train = 2
+transform_train_list.append( transforms.RandomCrop(32, padding=translation_train) )
+
+# Train:Rotation
+if 'rotation_train' in d:
+    rotation_train = d['rotation_train']
+    transform_train_list.append( transforms.RandomRotation(rotation_train) ) 
+else:
+    pass # no rotation
+
+# Train:Normalization
+if d['dataset'] == 'cifar10':
+    transform_train_list.append( transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
+elif d['dataset'] == 'mnist':
+    transform_train_list(transforms.Normalize((0.1307,), (0.3081,)))
     
+transform_test = transforms.Compose( transform_train_list )
+
+### Test Data Transforms
+transform_test_list = [
+     transforms.RandomHorizontalFlip(), 
+     transforms.ToTensor()]
+
+# Don't use translation or rotation during test
+if 'rotation_test' in d:
+    rotation_test = d['rotation_test']
+else:
+    rotation_test = rotation_train
+transform_train_list.append( transforms.RandomRotation(rotation_train) )
+
+# Test:Translation       
 if 'translation_test' in d:
     translation_test = d['translation_test']
 else:
     translation_test = translation_train
+transform_train_list.append( transforms.RandomCrop(32, padding=translation_test) )
 
-# TODO add num_workers
-
-# load dataset CIFAR10, normalize, crop and flip as in paper
-transform_train_list = [transforms.RandomCrop(32, padding=translation_train),
-     transforms.RandomHorizontalFlip(), 
-     transforms.ToTensor()]
-
-transform_train_list.append( transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
-    
-transform_test = transforms.Compose( transform_train_list )
-
-
+# Test:Normalization
 if d['dataset'] == 'cifar10':
-    transform = transforms.Compose(
-        [transforms.RandomCrop(32, padding=4),
-         transforms.RandomHorizontalFlip(), 
-         transforms.ToTensor(),
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                            download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                              shuffle=True, num_workers=2)
-    
-    testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                           download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                             shuffle=False, num_workers=2)
-##
+    transform_test_list.append( transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
 elif d['dataset'] == 'mnist':
-    max_rotation = 60 # 0,30,60,90
-    translation_transform = torchvision.transforms.RandomCrop((32,32), padding=2)
-    train_loader = torch.utils.data.DataLoader(
-    torchvision.datasets.MNIST(root='.', train=True, download=True,
-                   transform=transforms.Compose([
-                       translation_transform,    
-                       torchvision.transforms.RandomRotation(max_rotation),
-                       transforms.ToTensor(),
-                       transforms.Normalize((0.1307,), (0.3081,))
-                   ])), batch_size=64, shuffle=True, num_workers=4)
-    # Test dataset
-    test_loader = torch.utils.data.DataLoader(
-        torchvision.datasets.MNIST(root='.', train=False, transform=transforms.Compose([
-            torchvision.transforms.RandomRotation(max_rotation),
-            transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])), batch_size=64, shuffle=True, num_workers=4)
+    transform_test_list(transforms.Normalize((0.1307,), (0.3081,)))
+    
+transform_test = transforms.Compose( transform_test_list )
 
-#############        Network definition       ####################
+##### Load Data for Train and Test:
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform_test)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                          shuffle=True, num_workers=2)
+testset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                       download=True, transform=transform_test)
+testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
+                                         shuffle=False, num_workers=2)
 
 ###Shared code: ###############################################################
 ###############################################################################

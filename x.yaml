@@ -7,12 +7,17 @@ n2 : 32
 n3 : 16
 filtersize : 3
 
-batchsize : 4 # default = 4
+batchsize : 4 # default = 4 # try 64
 
 ### DATA SET ####
 dataset : cifar10 # 'cifar10' or 'mnist'
 # optional parameters:
-rotation_train : 30 # default = 0
-rotation_test : 23 # default = rotation_train
 translation_train : 2 # default = 2
+rotation_train : 30 # default = 0
+
 translation_test : 2 # default = translation_train
+rotation_test : 23 # default = rotation_train
+
+### Unused and not implemented:
+# rotation_test : 23 # default = rotation_train
+#translation_test : 2 # default = translation_train
