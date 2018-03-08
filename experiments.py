@@ -8,45 +8,168 @@ first experiment
 
 """
 
-
 import numpy as np
-#import matplotlib.pyplot as plt
 import torch
 import torchvision
-from torchvision import datasets, transforms
+from torchvision import transforms
 from torch.autograd import Variable
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-from network import NPTN
-import pandas as pd
 import sys
-import os # for os.path.join()
+import os
 import datetime
 import time
-
 import argparse
 from visdom import Visdom
+import yaml
 
-parser = argparse.ArgumentParser(description='GLRC stage 1')
+## import the networks:
+from network import twoLayeredNPTN
+from network import twoLayeredCNN
+
+'''
+parser = argparse.ArgumentParser(description='Experiment')
+parser.add_argument('-n', '--network_type', default = none, type=str, help='choose \'nptn\' or \'cnn\'')
+parser.add_argument('-e', '--experiment', default = 'nptn', type=str, help='))
 parser.add_argument('-conv_1', '--conv_1_features', default = 24, type=int)
+parser.add_argument('-conv_2', '--conv_2_features', default = 16, type=int)
 parser.add_argument('-g', '--group_size', default = 2, type=int)
 parser.add_argument('-k', '--kernel_size', default = 5, type=int)
 parser.add_argument('-b', '--batch_size', default = 4, type=int)
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
-
 args = parser.parse_args()
+
 conv_1_features = args.conv_1_features
 G = args.group_size
 kernel_size = args.kernel_size
 out_dir = args.out_dir
 batch_size = args.batch_size
+net_type = args.network_type
+'''
+
+parser = argparse.ArgumentParser(description='Experiment')
+parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-o', '--out_dir', default = "output", type=str)
+args = parser.parse_args()
 
 ts = time.time()
 timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-timestamp.replace(':','_').replace(' ','_').replace('-','_')
-spec_string = str(timestamp) + '_Conv' + str(conv_1_features) + "_Group" + str(G) + "_Kernel" + str(kernel_size)
+timestamp = timestamp.replace(':','_').replace(' ','_').replace('-','_')
 
+with open("x.yaml", 'r') as stream:
+    try:
+        d = yaml.load(stream)
+    except yaml.YAMLError as exc:
+        print(exc)
+
+# Default values:
+if 'batchsize' in d:
+    batch_size = d['batchsize']
+else:
+    batch_size = 4
+
+# Which data set to use?
+ss = str(timestamp)
+if d['dataset'] == 'mnist':
+    M = 1
+    ss = ss + '_mnist_1M'
+elif d['dataset'] == 'cifar10':
+    M = 3 
+    ss = ss + '_cifar10_3M'
+
+if d['type'] == 'nptn':
+    ss = ss + '_nptn_' + str(d['layers']) + 'layers'
+    if   d['layers'] == 2:
+        net = twoLayeredNPTN(d['n1'], d['g'], d['filtersize'], in_channels=M)
+        ss = ss + str(d['n1']) + 'N1_' + str(d['g']) + 'G_' + str(d['filtersize']) + "Kernel"
+    elif d['layers'] == 3:
+        pass # TODO
+
+elif d['type'] == 'cnn':
+    ss = ss + '_cnn_' + str(d['layers']) + 'layers'
+    if d['layers'] == 2:
+       twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
+       ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel"
+    elif d['layers'] == 3:
+        # TODO
+        pass
+     
+spec_string = ss
+
+###########   loading and preprocessing the data    ############
+
+# TODO add num_workers
+
+# load dataset CIFAR10, normalize, crop and flip as in paper
+
+### Training Data Transforms
+transform_train_list = [
+     transforms.RandomHorizontalFlip(), 
+     transforms.ToTensor()]
+
+# Train:Translation
+if 'translation_train' in d:
+    translation_train = d['translation_train']
+else:
+    translation_train = 2
+transform_train_list.append( transforms.RandomCrop(32, padding=translation_train) )
+
+# Train:Rotation
+if 'rotation_train' in d:
+    rotation_train = d['rotation_train']
+    transform_train_list.append( transforms.RandomRotation(rotation_train) ) 
+else:
+    pass # no rotation
+
+# Train:Normalization
+if d['dataset'] == 'cifar10':
+    transform_train_list.append( transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
+elif d['dataset'] == 'mnist':
+    transform_train_list(transforms.Normalize((0.1307,), (0.3081,)))
+    
+transform_test = transforms.Compose( transform_train_list )
+
+### Test Data Transforms
+transform_test_list = [
+     transforms.RandomHorizontalFlip(), 
+     transforms.ToTensor()]
+
+# Don't use translation or rotation during test
+if 'rotation_test' in d:
+    rotation_test = d['rotation_test']
+else:
+    rotation_test = rotation_train
+transform_train_list.append( transforms.RandomRotation(rotation_train) )
+
+# Test:Translation       
+if 'translation_test' in d:
+    translation_test = d['translation_test']
+else:
+    translation_test = translation_train
+transform_train_list.append( transforms.RandomCrop(32, padding=translation_test) )
+
+# Test:Normalization
+if d['dataset'] == 'cifar10':
+    transform_test_list.append( transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
+elif d['dataset'] == 'mnist':
+    transform_test_list(transforms.Normalize((0.1307,), (0.3081,)))
+    
+transform_test = transforms.Compose( transform_test_list )
+
+##### Load Data for Train and Test:
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform_test)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                          shuffle=True, num_workers=2)
+testset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                       download=True, transform=transform_test)
+testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
+                                         shuffle=False, num_workers=2)
+
+###Shared code: ###############################################################
+###############################################################################
+
+## Set up files and directories for output:
 out_dir = args.out_dir
 experiment_out_dir = os.path.join(out_dir, spec_string)
 
@@ -66,34 +189,12 @@ validation_csv_file = open(validation_csv_file_name, "w", 1)
 print('batch,epoch,loss', file=csv_file)
 print('epoch,accuracy,validationNLLLoss', file=validation_csv_file)
 
-#0,500,1,2.1207124457359314
 ###############   Test if you can use the GPU   ################
 
 use_cuda = False
 if torch.cuda.is_available():
     use_cuda = True
     print('Using CUDA')
-
-###########   loading and preprocessing the data    ############
-
-# load dataset CIFAR10, normalize, crop and flip as in paper
-transform = transforms.Compose(
-    [transforms.RandomCrop(32, padding=4),
-     transforms.RandomHorizontalFlip(), 
-     transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                        download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                          shuffle=True, num_workers=2)
-
-testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                       download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                         shuffle=False, num_workers=2)
-
-classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 #######    Opening Connection to Visdom server and initialize plots   #########
 viz = Visdom(env = spec_string)
@@ -106,7 +207,7 @@ while not viz.check_connection() and startup_sec > 0:
 assert viz.check_connection(), 'No connection could be formed quickly'
 '''
 
-win = viz.line(
+winLoss = viz.line(
     Y=np.array([0]), name='training',
     opts=dict(
             fillarea=False,
@@ -141,49 +242,6 @@ winACC = viz.line(
             margintop=30,
         )
 )
-    
-
-#############        Network definition       ####################
-
-class twoLayeredNPTN(nn.Module):
-    def __init__(self, N, G, filtersize):
-        super(twoLayeredNPTN, self).__init__()
-        self.final_layer_dim = (7-np.int(filtersize/1.7))**2   # works for filtersizes 3,5,7
-        # first layer 
-        self.N = N
-        self.nptn = NPTN(3, N, G, filtersize)
-        self.batchnorm = nn.BatchNorm2d(N)   # is 2d the right one?
-        self.pool = nn.MaxPool2d(2)
-        self.prelu = nn.PReLU()
-        # second layer
-        self.nptn2 = NPTN(N, 16, G, filtersize)
-        self.batchnorm2 = nn.BatchNorm2d(16) 
-        self.prelu2 = nn.PReLU()
-        self.pool2 = nn.MaxPool2d(2)
-         
-        self.fc1 = nn.Linear(16 * self.final_layer_dim, 10)
-
-    def forward(self, x):
-        x = self.nptn(x)
-        #print('x after nptn ', x.size())
-        x = self.batchnorm(x)
-        #print('batchnorm ', x.size())
-        #x = F.prelu(self.nptn(x), 0.1) 
-        x = self.pool(self.prelu(x))
-        #print('shape first layer ', x.size())
-        x = self.batchnorm2(self.nptn2(x))
-        #print('after batchnorm 2 ', x.size())
-        x = self.pool2(self.prelu2(x))
-        #print('shape second layer ', x.size())
-        
-        x = x.view(-1, 16 * self.final_layer_dim)
-        #print('shape second layer ', x.size())
-        x = F.log_softmax(self.fc1(x), dim=1)
-        #print('after softmax ', x.size())
-        return x
-
-netN24G2 = twoLayeredNPTN(conv_1_features, G, kernel_size)
-net = netN24G2
 
 if use_cuda:
     net.cuda()
@@ -196,10 +254,6 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 ############## Train the network  ######################
 
 num_epochs = 300 # paper: 300
-
-stat_epoch = list()
-stat_batch = list()
-stat_loss = list()
 
 def training_epoch(epoch):
     running_loss = 0.0
@@ -225,29 +279,27 @@ def training_epoch(epoch):
         # print statistics
         running_loss += loss.data[0]
         if i % 500 == 499:
-            stat_epoch.append(epoch + 1)
-            stat_batch.append(i + 1)
-            stat_loss.append(running_loss / 500)
+            stat_epoch = epoch + 1
+            stat_batch = i + 1
+            stat_loss = running_loss / 500
             print('[%d, %5d] loss: %.3f' %
-                  (stat_epoch[-1], stat_batch[-1], stat_loss[-1]))
+                  (stat_epoch, stat_batch, stat_loss))
             print('[%d, %5d] loss: %.3f' %
-                  (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file = txt_file)
+                  (stat_epoch, stat_batch, stat_loss), file = txt_file)
             sys.stdout.flush()
-            print('%i,%i,%.3f' % (stat_epoch[-1], stat_batch[-1], stat_loss[-1]), file=csv_file)
-            # TODO DELETE STAT_EPOCH
+            print('%i,%i,%.3f' % (stat_epoch, stat_batch, stat_loss), file=csv_file)
 
             # update plot
             viz.line(
                 X=np.array([epoch + i/(trainloader.dataset.train_data.shape[0]/batch_size)]),
-                Y=np.array([stat_loss[-1]]),
-                win=win,
+                Y=np.array([stat_loss]),
+                win=winLoss,
                 name='training',
                 update='append',
                 opts=dict(showlegend=True)
             )
             
             running_loss = 0.0
-
 
 def validation(epoch):
     # measure accuracy (not in paper though, so could be removed), currently not working
@@ -291,7 +343,7 @@ def validation(epoch):
     viz.line(
         X=np.array([epoch + 1]), 
         Y=np.array([running_loss /(testloader.dataset.test_data.shape[0]/batch_size)]),
-        win=win,
+        win=winLoss,
         name='test',
         update='append',
     opts=dict(showlegend=True))
