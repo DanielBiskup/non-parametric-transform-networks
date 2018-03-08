@@ -99,7 +99,7 @@ class NPTN(nn.Module):
 
 
 
-#net = NPTN()
+#net = NPTN(3,16,4,5)
 #outputs = net(Variable(images))
 
 #print(outputs)
