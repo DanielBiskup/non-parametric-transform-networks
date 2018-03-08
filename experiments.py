@@ -49,8 +49,8 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-# parser.add_argument('-c', '--config', default = "MNIST_rot_60.yaml", type=str, help='path to a .yaml configuration file')
-parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "MNIST_rot_60.yaml", type=str, help='path to a .yaml configuration file')
+# parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 args = parser.parse_args()
 
@@ -109,8 +109,14 @@ spec_string = ss
 transform_train_list = [
      transforms.RandomHorizontalFlip()]
 
+def is_set(d,key):
+    if key in d and d[key] != 0:
+        return True
+    else:
+        return False
+    
 # Train:Translation
-if 'translation_train' in d:
+if is_set(d,'translation_train'):
     translation_train = d['translation_train']
     transform_train_list.append( transforms.RandomCrop(32, padding=translation_train) )
 else:
@@ -118,7 +124,7 @@ else:
 
 
 # Train:Rotation
-if 'rotation_train' in d:
+if is_set(d,'rotation_train'):
     rotation_train = d['rotation_train']
     transform_train_list.append( transforms.RandomRotation(rotation_train) ) 
 else:
@@ -139,14 +145,14 @@ transform_test_list = [
      transforms.RandomHorizontalFlip()]
 
 # Don't use translation or rotation during test
-if 'rotation_test' in d:
+if is_set(d,'rotation_test'):
     rotation_test = d['rotation_test']
     transform_test_list.append( transforms.RandomRotation(rotation_test) )
 else:
     pass
 
 # Test:Translation       
-if 'translation_test' in d:
+if is_set(d,'translation_test'):
     translation_test = d['translation_test']
     transform_test_list.append( transforms.RandomCrop(32, padding=translation_test) )
 else:
