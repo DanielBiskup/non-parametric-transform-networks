@@ -76,6 +76,11 @@ class twoLayeredNPTN(nn.Module):
         #print('shape second layer ', x.size())
         
         x = x.view(-1, 16 * self.final_layer_dim)
+        # BUG DESCRIPTION:
+        # Runtime Error:"invalid argument 2: size '[-1 x 400]' is invalid for input with 16384 elements"
+        # when calling experiment with MNIST_rot_60.yaml
+        # Maybe find information here: http://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html#sphx-glr-beginner-blitz-neural-networks-tutorial-py
+        
         #print('shape second layer ', x.size())
         x = F.log_softmax(self.fc1(x), dim=1)
         #print('after softmax ', x.size())
@@ -111,7 +116,7 @@ class twoLayeredCNN(nn.Module):
         x = self.pool2(self.prelu2(x))
         #print('shape second layer ', x.size())
         
-        x = x.view(-1, 16 * self.final_layer_dim)
+        x = x.view(-1, 16 * self.final_layer_dim) # BUG: Fix this bug.
         #print('shape second layer ', x.size())
         x = F.log_softmax(self.fc1(x), dim=1)
         #print('after softmax ', x.size())
