@@ -69,14 +69,14 @@ def make_permutation(M,N):
 
 """ Non-parametric transformation network layer """ # TODO make this a layer
 class NPTN(nn.Module):
-    def __init__(self, M, N, G, filtersize):
+    def __init__(self, M, N, G, filtersize, padding=0):
         self.M=M
         self.N=N 
         self.G=G
         
         super(NPTN, self).__init__()
         
-        self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M) # in, out, kernel size, groups as in paper
+        self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M, padding=padding) # in, out, kernel size, groups as in paper
         self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
         self.meanpool3d = nn.AvgPool3d((self.M, 1, 1)) # Is that the right pooling? - AvgPool3d?
         
