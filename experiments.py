@@ -84,9 +84,11 @@ ss = str(timestamp)
 if d['dataset'] == 'mnist':
     M = 1
     ss = ss + '_mnist_1M'
+    image_size = 28
 elif d['dataset'] == 'cifar10':
     M = 3 
     ss = ss + '_cifar10_3M'
+    image_size = 32
 
 if d['type'] == 'nptn':
     ss = ss + '_nptn_' + str(d['layers']) + 'layers'
@@ -125,7 +127,7 @@ transform_train_list = [
 # Train:Translation
 if is_set(d,'translation_train'):
     translation_train = d['translation_train']
-    transform_train_list.append( transforms.RandomCrop(28, padding=translation_train) ) # TODO: Make 28(Mnist) and 32(CIFAR10) variables.
+    transform_train_list.append( transforms.RandomCrop(image_size, padding=translation_train) ) 
 else:
     pass
 
@@ -161,7 +163,7 @@ else:
 # Test:Translation       
 if is_set(d,'translation_test'):
     translation_test = d['translation_test']
-    transform_test_list.append( transforms.RandomCrop((28,28), padding=translation_test) ) # TODO: Make 28(Mnist) and 32(CIFAR10) variables.
+    transform_test_list.append( transforms.RandomCrop((image_size,image_size), padding=translation_test) ) 
 else:
     pass
 
