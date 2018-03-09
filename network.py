@@ -48,7 +48,10 @@ class NPTN(nn.Module):
 class twoLayeredNPTN(nn.Module):
     def __init__(self, N, G, filtersize, in_channels=3):
         super(twoLayeredNPTN, self).__init__()
-        self.final_layer_dim = (7-np.int(filtersize/1.7))**2   # works for filtersizes 3,5,7
+        if in_channels == 3:   # CIFAR
+            self.final_layer_dim = (7-np.int(filtersize/1.7))**2 # works for filtersizes 3,5,7
+        else: # MNIST
+            self.final_layer_dim = 4 * 4
         # first layer 
         self.N = N
         self.nptn = NPTN(in_channels, N, G, filtersize)
@@ -60,7 +63,7 @@ class twoLayeredNPTN(nn.Module):
         self.batchnorm2 = nn.BatchNorm2d(16) 
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
-        self.fc1 = nn.Linear(16 * 4 * 4, 10) # TODO
+        self.fc1 = nn.Linear(16 * final_layer_dim, 10) # TODO
 
     def forward(self, x):
         #print('============================================================')
@@ -104,7 +107,11 @@ class twoLayeredNPTN(nn.Module):
 class twoLayeredCNN(nn.Module):
     def __init__(self, filtersize, in_channels=3, N1=48, N2=16):
         super(twoLayeredCNN, self).__init__()
-        self.final_layer_dim = (7-np.int(filtersize/1.7))**2   # works for filtersizes 3,5,7
+        if in_channels == 3:   # CIFAR
+            self.final_layer_dim = (7-np.int(filtersize/1.7))**2 # works for filtersizes 3,5,7
+        else: # MNIST
+            self.final_layer_dim = 4 * 4 # filter size 5
+        self.N2 = N2
         # first layer 
         self.conv1 = nn.Conv2d(in_channels, N1, filtersize) # TODO maybe change filter size
         self.batchnorm = nn.BatchNorm2d(N1)   # is 2d the right one?
@@ -116,9 +123,10 @@ class twoLayeredCNN(nn.Module):
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
          
-        self.fc1 = nn.Linear(16 * self.final_layer_dim, 10)
+        self.fc1 = nn.Linear(N2 * self.final_layer_dim, 10)
 
     def forward(self, x):
+        #print('input shape', x.shape)
         x = self.conv1(x)
         #print('x after conv ', x.size())
         x = self.batchnorm(x)
@@ -131,7 +139,7 @@ class twoLayeredCNN(nn.Module):
         x = self.pool2(self.prelu2(x))
         #print('shape second layer ', x.size())
         
-        x = x.view(-1, 16 * self.final_layer_dim) # BUG: Fix this bug.
+        x = x.view(-1, self.N2 * self.final_layer_dim) # BUG: Fix this bug.
         #print('shape second layer ', x.size())
         x = F.log_softmax(self.fc1(x), dim=1)
         #print('after softmax ', x.size())

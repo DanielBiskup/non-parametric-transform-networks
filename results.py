@@ -34,3 +34,22 @@ plt.xlabel('(N,G)')
 plt.ylabel('Accuracy')
 plt.legend()
 plt.show()
+
+
+
+print('Rotation Experiments on MNIST')
+print('Kernelsize=5, Rotation=60?')
+print('NPTN(18,2)  Accuracy 96.32%, Loss = 0.12038491313457489')
+print('CNN(36) Accuracy 96.26 %, Loss = 0.11692798318862915' )
+
+
+
+# is MNIST 28*28?!
+# what you mean no rotation for test set?
+# baseline experiment?
+
+
+
+
+
+

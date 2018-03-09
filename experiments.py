@@ -49,7 +49,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "MNIST_rot_60.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "MNIST_CNN_rot_60.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 args = parser.parse_args()
@@ -91,7 +91,7 @@ if d['type'] == 'nptn':
 elif d['type'] == 'cnn':
     ss = ss + '_cnn_' + str(d['layers']) + 'layers'
     if d['layers'] == 2:
-       twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
+       net = twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel"
     elif d['layers'] == 3:
         # TODO
@@ -154,7 +154,7 @@ else:
 # Test:Translation       
 if is_set(d,'translation_test'):
     translation_test = d['translation_test']
-    transform_test_list.append( transforms.RandomCrop(28, padding=translation_test) ) # TODO: Make 28(Mnist) and 32(CIFAR10) variables.
+    transform_test_list.append( transforms.RandomCrop((28,28), padding=translation_test) ) # TODO: Make 28(Mnist) and 32(CIFAR10) variables.
 else:
     pass
 
@@ -172,6 +172,7 @@ transform_test = transforms.Compose( transform_test_list )
 num_workers = 4
 
 if d['dataset'] == 'cifar10':
+    print('Using CIFAR10')
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
                                             download=True, transform=transform_train)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -181,6 +182,7 @@ if d['dataset'] == 'cifar10':
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=num_workers)
 elif d['dataset'] == 'mnist':
+    print('Using MNIST')
     trainset = torchvision.datasets.MNIST(root='./data', train=True,
                                                 download=True, transform=transform_train)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -289,7 +291,10 @@ num_epochs = 300 # paper: 300
 
 def training_epoch(epoch):
     running_loss = 0.0
+    correct = 0
+    
     for i, data in enumerate(trainloader, 0): 
+         
         # get the inputs
         inputs, labels = data
 
@@ -310,6 +315,10 @@ def training_epoch(epoch):
 
         # print statistics
         running_loss += loss.data[0]
+        
+        _, predicted = torch.max(outputs.data, 1)
+        correct += (predicted == labels.data).sum()
+        
         if i % 500 == 499:
             stat_epoch = epoch + 1
             stat_batch = i + 1
@@ -332,7 +341,19 @@ def training_epoch(epoch):
             )
             
             running_loss = 0.0
-        
+    accuracy = (100 * correct / trainloader.dataset.train_data.shape[0])  
+    print('Accuracy of the network on the train images: %d %%' % accuracy)
+    print('Accuracy of the network on the train images: %d %%' % accuracy, file=txt_file)
+
+    viz.line(
+        X=np.array([epoch + 1]), 
+        Y=np.array([accuracy]),
+        win=winACC,
+        name='train',
+        update='append',
+    opts=dict(showlegend=True))
+    
+
 
 def validation(epoch):
     # measure accuracy (not in paper though, so could be removed), currently not working
@@ -364,8 +385,8 @@ def validation(epoch):
     print('Epoch ', epoch, file=txt_file)
     accuracy = (100 * correct / total)
     NLLLoss = running_loss /(testloader.dataset.test_data.shape[0]/batch_size)
-    print('Accuracy of the NPTN network on the 10000 test images: %d %%' % accuracy)
-    print('Accuracy of the NPTN network on the 10000 test images: %d %%' % accuracy, file=txt_file)
+    print('Accuracy of the network on the 10000 test images: %d %%' % accuracy)
+    print('Accuracy of the network on the 10000 test images: %d %%' % accuracy, file=txt_file)
     print('NLLLoss = ', NLLLoss)
     print('NLLLoss = ', NLLLoss,
           file=txt_file)
