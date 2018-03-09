@@ -107,12 +107,13 @@ class twoLayeredNPTN(nn.Module):
         return num_features
     
 class twoLayeredCNN(nn.Module):
-    def __init__(self, filtersize, in_channels=3, N1=48, N2=16):
+    def __init__(self, filtersize, in_channels=3, N1=48, N2=16, input_channel=3):
         super(twoLayeredCNN, self).__init__()
-        if in_channels == 3:   # CIFAR
-            self.final_layer_dim = (7-np.int(filtersize/1.7))**2 # works for filtersizes 3,5,7
-        else: # MNIST
-            self.final_layer_dim = 4 * 4 # filter size 5
+        if input_channel==3: # CIFAR
+            self.input_size=(3,32,32)
+        else:
+            self.input_size=(1,28,28)
+        
         self.N2 = N2
         # first layer 
         self.conv1 = nn.Conv2d(in_channels, N1, filtersize) # TODO maybe change filter size
@@ -125,9 +126,20 @@ class twoLayeredCNN(nn.Module):
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
          
-        self.fc1 = nn.Linear(N2 * self.final_layer_dim, 10)
+        n = self.num_flat_features(self.input_size)
+        #print('num_flat_features = ' + str(n))
+        
+        self.fc1 = nn.Linear(n, 10)
+        
+    def num_flat_features(self, input_size):
+        t = Variable(torch.ones(1, *input_size))
+        #print('t.size() = ' + str(t.size()))
+        f = self.features(t)
+        #print('Shape after convolution layers = ' + str(f.size()))
+        n = int(np.prod(f.size()[1:]))
+        return n
 
-    def forward(self, x):
+    def features(self, x):
         #print('input shape', x.shape)
         x = self.conv1(x)
         #print('x after conv ', x.size())
@@ -140,15 +152,16 @@ class twoLayeredCNN(nn.Module):
         #print('after batchnorm 2 ', x.size())
         x = self.pool2(self.prelu2(x))
         #print('shape second layer ', x.size())
+        return x
         
-        x = x.view(-1, self.N2 * self.final_layer_dim) # BUG: Fix this bug.
+    def forward(self, x):
+        x = self.features(x)
+        #x = x.view(-1, self.n3 * self.final_layer_dim)
+        x = x.view(x.size(0), -1)
         #print('shape second layer ', x.size())
         x = F.log_softmax(self.fc1(x), dim=1)
         #print('after softmax ', x.size())
         return x
-
-
-
 
 class threeLayeredNPTN(nn.Module):
     def __init__(self, filtersize=5, G=3, n1=48, n2=48, n3=16, input_channel=3):
@@ -156,10 +169,8 @@ class threeLayeredNPTN(nn.Module):
         self.n3 = n3
         padding = int(filtersize/2) # needed if you want to use maxpooling 3 times
         if input_channel==3: # CIFAR
-            self.final_layer_dim = 4*4  # for image size of 32x32
             self.input_size=(3,32,32)
         else:
-            self.final_layer_dim = 3*3  # TODO correct?
             self.input_size=(1,28,28)
         
         # first layer 
@@ -178,17 +189,21 @@ class threeLayeredNPTN(nn.Module):
         self.prelu3 = nn.PReLU()
         self.pool3 = nn.MaxPool2d(2)
         
-        t = Variable(torch.ones(1, *self.input_size))
-        print('t.size() = ' + str(t.size()))
-        f = self.features(t)
-        print('Shape after convolution layers = ' + str(f.size()))
-        num_flat_features = int(np.prod(f.size()[1:]))
-        print('num_flat_features = ' + str(num_flat_features))
+        n = self.num_flat_features(self.input_size)
+        #print('num_flat_features = ' + str(n))
         
-        self.fc1 = nn.Linear(num_flat_features, 10)
+        self.fc1 = nn.Linear(n, 10)
+
+    def num_flat_features(self, input_size):
+        t = Variable(torch.ones(1, *input_size))
+        #print('t.size() = ' + str(t.size()))
+        f = self.features(t)
+        #print('Shape after convolution layers = ' + str(f.size()))
+        n = int(np.prod(f.size()[1:]))
+        return n
 
     def features(self, x):
-        print('x.size() = ' + str(x.size()))
+        #print('x.size() = ' + str(x.size()))
         
         # first layer
         x = self.batchnorm(self.nptn(x))
@@ -206,20 +221,14 @@ class threeLayeredNPTN(nn.Module):
         x = self.batchnorm3(self.nptn3(x))
         #print('after batchnorm 3 ', x.size())
         x = self.pool3(self.prelu3(x))
-        print('shape third layer ', x.size())
-        
+        #print('shape third layer ', x.size())
         return x
     
     def forward(self, x):
         x = self.features(x)
-        #x = x.view(-1, self.n3 * self.final_layer_dim)
         x = x.view(x.size(0), -1)
-
-        print('shape third layer after view', x.size())
         x = F.log_softmax(self.fc1(x), dim=1)
-        #print('after softmax ', x.size())
         return x
-    
 
 class threeLayeredCNN(nn.Module):
     def __init__(self, filtersize=5, n1=89, n2=89, n3=16, input_channel=3):
@@ -227,9 +236,10 @@ class threeLayeredCNN(nn.Module):
         self.n3 = n3
         padding = int(filtersize/2) # needed if you want to use maxpooling 3 times
         if input_channel==3: # CIFAR
-            self.final_layer_dim = 4*4  # for image size of 32x32
+            self.input_size=(3,32,32)
         else:
-            self.final_layer_dim = 3*3  # TODO correct?
+            self.input_size=(1,28,28)
+            
         # first layer 
         self.conv1 = nn.Conv2d(input_channel, n1, filtersize, padding=padding)
         self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
@@ -246,9 +256,19 @@ class threeLayeredCNN(nn.Module):
         self.prelu3 = nn.PReLU()
         self.pool3 = nn.MaxPool2d(2)
         
-        self.fc1 = nn.Linear(n3 * self.final_layer_dim, 10)
+        n = self.num_flat_features(self.input_size)
+        
+        self.fc1 = nn.Linear(n, 10)
 
-    def forward(self, x):
+    def num_flat_features(self, input_size):
+        t = Variable(torch.ones(1, *input_size))
+        #print('t.size() = ' + str(t.size()))
+        f = self.features(t)
+        #print('Shape after convolution layers = ' + str(f.size()))
+        n = int(np.prod(f.size()[1:]))
+        return n
+
+    def features(self, x):
         # first layer
         x = self.batchnorm(self.conv1(x))
         #print('batchnorm ', x.size())
@@ -266,11 +286,12 @@ class threeLayeredCNN(nn.Module):
         #print('after batchnorm 3 ', x.size())
         x = self.pool3(self.prelu3(x))
         #print('shape third layer ', x.size())
-        
-        x = x.view(-1, self.n3 * self.final_layer_dim)
-        #print('shape third layer after view', x.size())
+        return x
+    
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
         x = F.log_softmax(self.fc1(x), dim=1)
-        #print('after softmax ', x.size())
         return x
     
         

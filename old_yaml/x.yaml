@@ -1,10 +1,19 @@
 # experiment configuration:
-type : 'nptn'
+#type : 'cnn'
+#layers : 3
+#g : 12
+#n1 : 89
+#n2 : 89
+#n3 : 16
+#filtersize : 5
+
+type : 'cnn'
 layers : 3
 g : 12
-n1 : 89
-n2 : 89
-n3 : 16
+n1 : 18
+n2 : 28
+n3 : 12
+
 filtersize : 5
 
 batchsize : 4 # default = 4 # try 64

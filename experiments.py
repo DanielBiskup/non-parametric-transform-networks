@@ -358,6 +358,20 @@ def training_epoch(epoch):
     opts=dict(showlegend=True))
     
 
+# TODO 
+'''
+def validation(epoch, loader):
+    # measure accuracy (not in paper though, so could be removed), currently not working
+    net.eval() # sets network into evaluation mode, might make difference for BatchNorm
+    
+    correct = 0
+    total = 0
+    running_loss = 0.0
+
+    
+    for data in loader:
+        images, labels = data
+'''
 
 def validation(epoch):
     # measure accuracy (not in paper though, so could be removed), currently not working
