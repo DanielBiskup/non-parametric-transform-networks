@@ -51,7 +51,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "3_layer_nptn_48_3_k5.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 args = parser.parse_args()
@@ -121,8 +121,6 @@ spec_string = ss
 ### Training Data Transforms
 transform_train_list = [
      transforms.RandomHorizontalFlip()]
-
-
     
 # Train:Translation
 if is_set(d,'translation_train'):
@@ -130,7 +128,6 @@ if is_set(d,'translation_train'):
     transform_train_list.append( transforms.RandomCrop(image_size, padding=translation_train) ) 
 else:
     pass
-
 
 # Train:Rotation
 if is_set(d,'rotation_train'):
@@ -222,6 +219,10 @@ validation_csv_file_name = os.path.join( experiment_out_dir, spec_string + "_VAL
 
 csv_file = open(csv_file_name, "w", 1)
 txt_file = open(txt_file_name, "w", 1)
+
+# Save YAML dictionary to file:            
+print(str(d), file = txt_file)
+
 validation_csv_file = open(validation_csv_file_name, "w", 1)
 
 print('batch,epoch,loss', file=csv_file)
