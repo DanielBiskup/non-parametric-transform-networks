@@ -54,6 +54,7 @@ parser = argparse.ArgumentParser(description='Experiment')
 parser.add_argument('-c', '--config', default = "3_layer_nptn_48_3_k5.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
+parser.add_argument('-n', '--name', default = "yaml", type=str, help='yaml: Will use the yaml file name for folder and file names. n will use number of layers as file name')
 args = parser.parse_args()
 
 ts = time.time()
@@ -110,6 +111,10 @@ elif d['type'] == 'cnn':
         
 if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
+
+if args.name == 'yaml':
+    ss = str(timestamp) + '_FRIDAY_' + args.config.replace('.','_')
+    
 spec_string = ss
 
 ###########   loading and preprocessing the data    ############
