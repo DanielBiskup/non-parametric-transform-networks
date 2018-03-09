@@ -26,7 +26,9 @@ import yaml
 
 ## import the networks:
 from network import twoLayeredNPTN
+from network import threeLayeredNPTN
 from network import twoLayeredCNN
+from network import threeLayeredCNN
 
 '''
 parser = argparse.ArgumentParser(description='Experiment')
@@ -49,7 +51,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "MNIST_CNN_rot_90.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 args = parser.parse_args()
@@ -92,17 +94,18 @@ if d['type'] == 'nptn':
         net = twoLayeredNPTN(d['n1'], d['g'], d['filtersize'], in_channels=M)
         ss = ss + str(d['n1']) + 'N1_' + str(d['g']) + 'G_' + str(d['filtersize']) + "Kernel"
     elif d['layers'] == 3:
-        pass # TODO
+        net = threeLayeredNPTN(filtersize=d['filtersize'], G=d['g'] ,n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['g']) + 'G_' + str(d['filtersize']) + "Kernel"
 
 elif d['type'] == 'cnn':
     ss = ss + '_cnn_' + str(d['layers']) + 'layers'
     if d['layers'] == 2:
-       net = twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
-       ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel"
+        net = twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel"
     elif d['layers'] == 3:
-        # TODO
-        pass
-     
+        net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
+        
 if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
 spec_string = ss

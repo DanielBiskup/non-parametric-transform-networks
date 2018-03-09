@@ -7,6 +7,8 @@ Non-parameteric transformation network
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
+from torch.autograd import Variable
 
 def make_permutation(M,N):
     nums = [i for i in range(M*N)]
@@ -155,8 +157,11 @@ class threeLayeredNPTN(nn.Module):
         padding = int(filtersize/2) # needed if you want to use maxpooling 3 times
         if input_channel==3: # CIFAR
             self.final_layer_dim = 4*4  # for image size of 32x32
+            self.input_size=(3,32,32)
         else:
             self.final_layer_dim = 3*3  # TODO correct?
+            self.input_size=(1,28,28)
+        
         # first layer 
         self.nptn = NPTN(input_channel, n1, G, filtersize, padding=padding)
         self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
@@ -173,9 +178,18 @@ class threeLayeredNPTN(nn.Module):
         self.prelu3 = nn.PReLU()
         self.pool3 = nn.MaxPool2d(2)
         
-        self.fc1 = nn.Linear(n3 * self.final_layer_dim, 10)
+        t = Variable(torch.ones(1, *self.input_size))
+        print('t.size() = ' + str(t.size()))
+        f = self.features(t)
+        print('Shape after convolution layers = ' + str(f.size()))
+        num_flat_features = int(np.prod(f.size()[1:]))
+        print('num_flat_features = ' + str(num_flat_features))
+        
+        self.fc1 = nn.Linear(num_flat_features, 10)
 
-    def forward(self, x):
+    def features(self, x):
+        print('x.size() = ' + str(x.size()))
+        
         # first layer
         x = self.batchnorm(self.nptn(x))
         #print('batchnorm ', x.size())
@@ -192,10 +206,16 @@ class threeLayeredNPTN(nn.Module):
         x = self.batchnorm3(self.nptn3(x))
         #print('after batchnorm 3 ', x.size())
         x = self.pool3(self.prelu3(x))
-        #print('shape third layer ', x.size())
+        print('shape third layer ', x.size())
         
-        x = x.view(-1, self.n3 * self.final_layer_dim)
-        #print('shape third layer after view', x.size())
+        return x
+    
+    def forward(self, x):
+        x = self.features(x)
+        #x = x.view(-1, self.n3 * self.final_layer_dim)
+        x = x.view(x.size(0), -1)
+
+        print('shape third layer after view', x.size())
         x = F.log_softmax(self.fc1(x), dim=1)
         #print('after softmax ', x.size())
         return x

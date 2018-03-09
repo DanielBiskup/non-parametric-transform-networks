@@ -1,22 +1,22 @@
 # experiment configuration:
 type : 'nptn'
-layers : 2
+layers : 3
 g : 12
-n1 : 64
-n2 : 32
+n1 : 89
+n2 : 89
 n3 : 16
-filtersize : 3
+filtersize : 5
 
 batchsize : 4 # default = 4 # try 64
 
 ### DATA SET ####
 dataset : cifar10 # 'cifar10' or 'mnist'
 # optional parameters:
-translation_train : 2 # default = 2
-rotation_train : 30 # default = 0
+translation_train : 4 # default = 2
+rotation_train : 0 # default = 0
 
-translation_test : 2 # default = translation_train
-rotation_test : 23 # default = rotation_train
+translation_test : 4  # default = translation_train
+rotation_test : 0 # default = rotation_train
 
 ### Unused and not implemented:
 # rotation_test : 23 # default = rotation_train
