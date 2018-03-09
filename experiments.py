@@ -49,7 +49,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "MNIST_CNN_rot_60.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "MNIST_CNN_rot_90.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 args = parser.parse_args()

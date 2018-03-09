@@ -39,9 +39,11 @@ plt.show()
 
 print('Rotation Experiments on MNIST')
 print('Kernelsize=5, Rotation=60?')
+print('after 300 epochs')
 print('NPTN(18,2)  Accuracy 96.32%, Loss = 0.12038491313457489')
-print('CNN(36) Accuracy 96.26 %, Loss = 0.11692798318862915' )
-
+print('CNN(36) Accuracy 96.28 %, Loss = 0.11692798318862915' )
+print('\n\nKernelsize=5, Rotation=90')
+print('CNN(36) Accuracy 94% Loss = 0.1816810576915741')
 
 
 # is MNIST 28*28?!

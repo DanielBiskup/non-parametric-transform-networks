@@ -18,10 +18,10 @@ class threeLayeredNPTN(nn.Module):
         super(threeLayeredNPTN, self).__init__()
         self.n3 = n3
         padding = int(filtersize/2) # needed if you want to use maxpooling 3 times
-        if padding:
+        if input_channel==3: # CIFAR
             self.final_layer_dim = 4*4  # for image size of 32x32
         else:
-            self.final_layer_dim = (7-np.int(filtersize/1.7))**2  # for filtersizes 3,5,7
+            self.final_layer_dim = 3*3  # TODO correct?
         # first layer 
         self.nptn = NPTN(input_channel, n1, G, filtersize, padding=padding)
         self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
@@ -71,10 +71,10 @@ class threeLayeredCNN(nn.Module):
         super(threeLayeredCNN, self).__init__()
         self.n3 = n3
         padding = int(filtersize/2) # needed if you want to use maxpooling 3 times
-        if padding:
-            self.final_layer_dim = 4*4  # for image size of 32
+        if input_channel==3: # CIFAR
+            self.final_layer_dim = 4*4  # for image size of 32x32
         else:
-            self.final_layer_dim = (7-np.int(filtersize/1.7))**2   # works for filtersizes 3,5,7
+            self.final_layer_dim = 3*3  # TODO correct?
         # first layer 
         self.conv1 = nn.Conv2d(input_channel, n1, filtersize, padding=padding)
         self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
