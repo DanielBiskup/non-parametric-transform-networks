@@ -65,6 +65,12 @@ with open(yaml_file_name, 'r') as stream:
     except yaml.YAMLError as exc:
         print(exc)
 
+def is_set(d,key):
+    if key in d and d[key] != 0:
+        return True
+    else:
+        return False
+
 # Default values:
 if 'batchsize' in d:
     batch_size = d['batchsize']
@@ -97,6 +103,8 @@ elif d['type'] == 'cnn':
         # TODO
         pass
      
+if is_set(d, 'rotation_train'):
+    ss = ss + '__rotation' + str(d['rotation_train'])
 spec_string = ss
 
 ###########   loading and preprocessing the data    ############
@@ -109,11 +117,7 @@ spec_string = ss
 transform_train_list = [
      transforms.RandomHorizontalFlip()]
 
-def is_set(d,key):
-    if key in d and d[key] != 0:
-        return True
-    else:
-        return False
+
     
 # Train:Translation
 if is_set(d,'translation_train'):
@@ -198,11 +202,6 @@ elif d['dataset'] == 'mnist':
 ## Set up files and directories for output:
 out_dir = args.out_dir
 experiment_out_dir = os.path.join(out_dir, spec_string)
-
-#HACKY__
-experiment_out_dir = experiment_out_dir + '__rotation' + str(d['rotation_train'])
-#__HACKY
-
 
 #copyfile(yaml_file_name, experiment_out_dir + '/')
 

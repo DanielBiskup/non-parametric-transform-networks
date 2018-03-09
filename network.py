@@ -63,7 +63,7 @@ class twoLayeredNPTN(nn.Module):
         self.batchnorm2 = nn.BatchNorm2d(16) 
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
-        self.fc1 = nn.Linear(16 * final_layer_dim, 10) # TODO
+        self.fc1 = nn.Linear(16 * self.final_layer_dim, 10) # TODO
 
     def forward(self, x):
         #print('============================================================')
