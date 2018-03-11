@@ -352,6 +352,11 @@ def training_epoch(epoch):
             
             running_loss = 0.0
     accuracy = (100 * correct / trainloader.dataset.train_data.shape[0])  
+
+    print('----------------------------------------------')
+    print('----------------------------------------------', file=txt_file)
+    print('Epoch ', epoch)
+    print('Epoch ', epoch, file=txt_file)    
     print('Accuracy of the network on the train images: %d %%' % accuracy)
     print('Accuracy of the network on the train images: %d %%' % accuracy, file=txt_file)
 
@@ -364,11 +369,16 @@ def training_epoch(epoch):
     opts=dict(showlegend=True))
     
 
-# TODO 
-'''
-def validation(epoch, loader):
+def validation(epoch, test=True):
     # measure accuracy (not in paper though, so could be removed), currently not working
     net.eval() # sets network into evaluation mode, might make difference for BatchNorm
+    
+    if test:
+        loader = testloader
+        dataset_size = testloader.dataset.test_data.shape[0]
+    else:
+        loader = trainloader
+        dataset_size = trainloader.dataset.train_data.shape[0]
     
     correct = 0
     total = 0
@@ -376,19 +386,6 @@ def validation(epoch, loader):
 
     
     for data in loader:
-        images, labels = data
-'''
-
-def validation(epoch):
-    # measure accuracy (not in paper though, so could be removed), currently not working
-    net.eval() # sets network into evaluation mode, might make difference for BatchNorm
-    
-    correct = 0
-    total = 0
-    running_loss = 0.0
-
-    
-    for data in testloader:
         images, labels = data
         if use_cuda:
             images, labels = Variable(images.cuda()), Variable(labels.cuda())
@@ -403,37 +400,59 @@ def validation(epoch):
         total += labels.size(0)
 
         correct += (predicted == labels.data).sum()
-    print('----------------------------------------------')
-    print('----------------------------------------------', file=txt_file)
-    print('Epoch ', epoch)
-    print('Epoch ', epoch, file=txt_file)
+
     accuracy = (100 * correct / total)
-    NLLLoss = running_loss /(testloader.dataset.test_data.shape[0]/batch_size)
-    print('Accuracy of the network on the 10000 test images: %d %%' % accuracy)
-    print('Accuracy of the network on the 10000 test images: %d %%' % accuracy, file=txt_file)
-    print('NLLLoss = ', NLLLoss)
-    print('NLLLoss = ', NLLLoss,
-          file=txt_file)
+    NLLLoss = running_loss /(dataset_size/batch_size)    
+    
+
+    if test:
+        print('Accuracy of the network on the 10000 test images: %d %%' % accuracy)
+        print('Accuracy of the network on the 10000 test images: %d %%' % accuracy, file=txt_file)
+        print('Test NLLLoss = ', NLLLoss)
+        print('Test NLLLoss = ', NLLLoss, file=txt_file)
+
+    else:
+        print('Accuracy of the network on all training images: %d %%' % accuracy)
+        print('Accuracy of the network on all training images: %d %%' % accuracy, file=txt_file)
+        print('Train NLLLoss = ', NLLLoss)
+        print('Train NLLLoss = ', NLLLoss, file=txt_file)
 
     #Save CSV: #
-    print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=validation_csv_file)
+    print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=validation_csv_file) #TODO
     
     # update plot
-    viz.line(
-        X=np.array([epoch + 1]), 
-        Y=np.array([running_loss /(testloader.dataset.test_data.shape[0]/batch_size)]),
-        win=winLoss,
-        name='test',
-        update='append',
-    opts=dict(showlegend=True))
-
-    viz.line(
-        X=np.array([epoch + 1]), 
-        Y=np.array([100 * correct / total]),
-        win=winACC,
-        name='test',
-        update='append',
-    opts=dict(showlegend=True))
+    if test:
+        viz.line(
+            X=np.array([epoch + 1]), 
+            Y=np.array([running_loss /(dataset_size/batch_size)]),
+            win=winLoss,
+            name='test',
+            update='append',
+        opts=dict(showlegend=True))
+    
+        viz.line(
+            X=np.array([epoch + 1]), 
+            Y=np.array([100 * correct / total]),
+            win=winACC,
+            name='test',
+            update='append',
+        opts=dict(showlegend=True))
+    else:
+        viz.line(
+            X=np.array([epoch + 1]), 
+            Y=np.array([running_loss /(dataset_size/batch_size)]),
+            win=winLoss,
+            name='trainvalidation',
+            update='append',
+        opts=dict(showlegend=True))
+    
+        viz.line(
+            X=np.array([epoch + 1]), 
+            Y=np.array([100 * correct / total]),
+            win=winACC,
+            name='trainvalidation',
+            update='append',
+        opts=dict(showlegend=True))
     
     net.train()  # set network back in training mode
     return accuracy
@@ -472,3 +491,5 @@ validation_csv_file.close()
 # Save the model:
 model_file_name = os.path.join( experiment_out_dir, spec_string + ".final_model")
 torch.save(net, model_file_name)
+
+
