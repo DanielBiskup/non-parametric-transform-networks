@@ -46,6 +46,10 @@ print('\n\nKernelsize=5, Rotation=90')
 print('CNN(36) Accuracy 94% Loss = 0.1816810576915741')
 
 
+print('Rotation Experiments on MNIST without horizontal flipping')
+print('NPTN(18,2): Test NLLLoss =  0.0738690174460411, Acc 97 %' )
+print('CNN(36): Test NLLLoss =  0.07362796711921692, 97 %')
+
 # is MNIST 28*28?!
 # what you mean no rotation for test set?
 # baseline experiment?

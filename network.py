@@ -107,9 +107,9 @@ class twoLayeredNPTN(nn.Module):
         return num_features
     
 class twoLayeredCNN(nn.Module):
-    def __init__(self, filtersize, in_channels=3, N1=48, N2=16, input_channel=3):
+    def __init__(self, filtersize, in_channels=3, N1=48, N2=16):
         super(twoLayeredCNN, self).__init__()
-        if input_channel==3: # CIFAR
+        if in_channels==3: # CIFAR
             self.input_size=(3,32,32)
         else:
             self.input_size=(1,28,28)

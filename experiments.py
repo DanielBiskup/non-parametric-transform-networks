@@ -51,7 +51,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "3_layer_nptn_48_3_k5.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "MNIST_CNN_rot_90.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 parser.add_argument('-n', '--name', default = "yaml", type=str, help='yaml: Will use the yaml file name for folder and file names. n will use number of layers as file name')
@@ -113,7 +113,7 @@ if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
 
 if args.name == 'yaml':
-    ss = str(timestamp) + '_FRIDAY_' + args.config.replace('.','_')
+    ss = str(timestamp) + '_NEWAccTEST_' + args.config.replace('.','_')
     
 spec_string = ss
 
@@ -124,8 +124,8 @@ spec_string = ss
 # load dataset CIFAR10, normalize, crop and flip as in paper
 
 ### Training Data Transforms
-transform_train_list = [
-     transforms.RandomHorizontalFlip()]
+transform_train_list = []
+     #transforms.RandomHorizontalFlip()]
     
 # Train:Translation
 if is_set(d,'translation_train'):
@@ -150,10 +150,11 @@ elif d['dataset'] == 'mnist':
     transform_train_list.append(transforms.Normalize((0.1307,), (0.3081,)))
 
 transform_train = transforms.Compose( transform_train_list )
+print(transform_train)
 
 ### Test Data Transforms
-transform_test_list = [
-     transforms.RandomHorizontalFlip()]
+transform_test_list = []
+     #transforms.RandomHorizontalFlip()]
 
 # Don't use translation or rotation during test
 if is_set(d,'rotation_test'):
@@ -178,6 +179,7 @@ elif d['dataset'] == 'mnist':
     transform_test_list.append(transforms.Normalize((0.1307,), (0.3081,)))
 
 transform_test = transforms.Compose( transform_test_list )
+print(transform_test)
 
 ##### Load Data for Train and Test:
 num_workers = 4
@@ -402,8 +404,7 @@ def validation(epoch, test=True):
         correct += (predicted == labels.data).sum()
 
     accuracy = (100 * correct / total)
-    NLLLoss = running_loss /(dataset_size/batch_size)    
-    
+    NLLLoss = running_loss / (dataset_size/batch_size)
 
     if test:
         print('Accuracy of the network on the 10000 test images: %d %%' % accuracy)
@@ -473,7 +474,8 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
     
     # call validation batch every 5th epoch
     if (epoch + 1) % 1 == 0:
-        accuracy = validation(epoch)
+        accuracy = validation(epoch, test=True)
+        validation(epoch, test=False)
         # Save the model:
         if ( accuracy > best_accuracy ):
             best_accuracy = accuracy
