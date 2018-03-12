@@ -33,8 +33,9 @@ def imshow(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
 def show(img):
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    imshow(torchvision.utils.make_grid(img))
+    #npimg = img.numpy()
+    #plt.imshow(np.transpose(npimg, (1, 2, 0)))
     
 # for showing filters
 def plot_kernels(tensor, num_cols=6): # plots all kernels (can take a while)
