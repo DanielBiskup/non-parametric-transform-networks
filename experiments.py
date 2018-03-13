@@ -205,7 +205,7 @@ elif d['dataset'] == 'mnist':
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=num_workers)
 
-###Shared code: ###############################################################
+###Shared code: ########################################################pool2#######
 ###############################################################################
 
 ## Set up files and directories for output:
@@ -324,6 +324,10 @@ def training_epoch(epoch):
         outputs = net(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
+        for name, parameter in net.named_parameters():
+            print('Name: {}, min {:.04f}, max {:.04f}, norm {:.04f}'.format(
+                    name, parameter.grad.min().data[0], parameter.grad.max().data[0], parameter.grad.norm().data[0])
+
         optimizer.step()
 
         # print statistics
@@ -354,7 +358,7 @@ def training_epoch(epoch):
             )
             
             running_loss = 0.0
-    accuracy = (100 * correct / trainloader.dataset.train_data.shape[0])  
+    accuracy = (100 * correct / trainloader.dataset.train_data.shape[0])
 
     print('----------------------------------------------')
     print('----------------------------------------------', file=txt_file)

@@ -29,7 +29,7 @@ class threeLayeredNPTN(nn.Module):
         self.prelu = nn.PReLU()
         # second layer
         self.nptn2 = NPTN(n1, n2, G, filtersize, padding=padding)
-        self.batchnorm2 = nn.BatchNorm2d(n2) 
+        self.batchnorm2 = nn.BatchNorm2d(n2)
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
         #third layer 
@@ -83,12 +83,12 @@ class threeLayeredCNN(nn.Module):
         self.prelu = nn.PReLU()
         # second layer
         self.conv2 = nn.Conv2d(n1, n2, filtersize, padding=padding)
-        self.batchnorm2 = nn.BatchNorm2d(n2) 
+        self.batchnorm2 = nn.BatchNorm2d(n2)
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
         #third layer 
         self.conv3 = nn.Conv2d(n2, n3, filtersize, padding=padding)
-        self.batchnorm3 = nn.BatchNorm2d(n3) 
+        self.batchnorm3 = nn.BatchNorm2d(n3)
         self.prelu3 = nn.PReLU()
         #self.pool3 = nn.MaxPool2d(2)
         
