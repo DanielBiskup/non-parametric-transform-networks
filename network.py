@@ -28,7 +28,7 @@ class NPTN(nn.Module):
         super(NPTN, self).__init__()
         
         self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M, padding=padding) # in, out, kernel size, groups as in paper
-        self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
+        self.maxpool3d = nn.MaxPool3d((self.G, 1, 1))
         self.meanpool3d = nn.AvgPool3d((self.M, 1, 1)) # Is that the right pooling? - AvgPool3d?
         
         self.permutation = make_permutation(self.M, self.N)
@@ -187,7 +187,7 @@ class threeLayeredNPTN(nn.Module):
         self.nptn3 = NPTN(n2, n3, G, filtersize, padding=padding)
         self.batchnorm3 = nn.BatchNorm2d(n3) 
         self.prelu3 = nn.PReLU()
-        self.pool3 = nn.MaxPool2d(2)
+        #self.pool3 = nn.MaxPool2d(2)
         
         n = self.num_flat_features(self.input_size)
         #print('num_flat_features = ' + str(n))
@@ -220,7 +220,7 @@ class threeLayeredNPTN(nn.Module):
         # third layer
         x = self.batchnorm3(self.nptn3(x))
         #print('after batchnorm 3 ', x.size())
-        x = self.pool3(self.prelu3(x))
+        x = self.prelu3(x)
         #print('shape third layer ', x.size())
         return x
     
@@ -252,9 +252,9 @@ class threeLayeredCNN(nn.Module):
         self.pool2 = nn.MaxPool2d(2)
         #third layer 
         self.conv3 = nn.Conv2d(n2, n3, filtersize, padding=padding)
-        self.batchnorm3 = nn.BatchNorm2d(n3) 
+        self.batchnorm3 = nn.BatchNorm2d(n3)
         self.prelu3 = nn.PReLU()
-        self.pool3 = nn.MaxPool2d(2)
+        #self.pool3 = nn.MaxPool2d(2)
         
         n = self.num_flat_features(self.input_size)
         
@@ -282,9 +282,9 @@ class threeLayeredCNN(nn.Module):
         #print('shape second layer ', x.size())
         
         # third layer
-        x = self.batchnorm3(self.conv3(x))
+        #x = self.batchnorm3(self.conv3(x))
         #print('after batchnorm 3 ', x.size())
-        x = self.pool3(self.prelu3(x))
+        #x = self.prelu3(x)
         #print('shape third layer ', x.size())
         return x
     
@@ -356,7 +356,6 @@ class rotNet(nn.Module):
         self.batchnorm2 = nn.BatchNorm2d(n2) 
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
-
         
         n = self.num_flat_features(self.input_size)
         
@@ -381,3 +380,10 @@ class rotNet(nn.Module):
         x = x.view(x.size(0), -1)
         x = F.log_softmax(self.fc1(x), dim=1)
         return x
+
+# show images
+imshow(torchvision.utils.make_grid(images))
+# print labels
+print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
+'''
+>>>>>>> a453b8327d5c1df2bd855cbf8ef4bcc67f45a359

@@ -113,7 +113,7 @@ if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
 
 if args.name == 'yaml':
-    ss = str(timestamp) + '_NEWAccTEST_' + args.config.replace('.','_')
+    ss = str(timestamp) + '_TUESDAY_' + args.config.replace('.','_')
     
 spec_string = ss
 
@@ -122,6 +122,13 @@ spec_string = ss
 # TODO add num_workers
 
 # load dataset CIFAR10, normalize, crop and flip as in paper
+
+print ('Net')
+print (net)
+
+
+_yes = input('press enter to continue: ')
+
 
 ### Training Data Transforms
 transform_train_list = []
@@ -205,7 +212,7 @@ elif d['dataset'] == 'mnist':
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=True, num_workers=num_workers)
 
-###Shared code: ###############################################################
+###Shared code: ########################################################pool2#######
 ###############################################################################
 
 ## Set up files and directories for output:
@@ -295,12 +302,14 @@ if use_cuda:
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
-optimizer = optim.SGD(net.parameters(), lr=0.1)
+optimizer = optim.SGD(net.parameters(), lr=0.001)
+
 
 ############## Train the network  ######################
 
 num_epochs = 300 # paper: 300
 
+log_file = open('logs/grad_stats', 'w')
 def training_epoch(epoch):
     running_loss = 0.0
     correct = 0
@@ -323,6 +332,13 @@ def training_epoch(epoch):
         outputs = net(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
+        # print grad stats every once in a while
+        if i % 500 == 499:
+            for name, parameter in net.named_parameters():
+                print('Name: {}, min {:.04f}, max {:.04f}, norm {:.04f}'.format(
+                        name, parameter.grad.min().data[0], parameter.grad.max().data[0], parameter.grad.norm().data[0])
+                , file = log_file)
+            print ('------------------------------', file=log_file)
         optimizer.step()
 
         # print statistics
@@ -353,7 +369,7 @@ def training_epoch(epoch):
             )
             
             running_loss = 0.0
-    accuracy = (100 * correct / trainloader.dataset.train_data.shape[0])  
+    accuracy = (100 * correct / trainloader.dataset.train_data.shape[0])
 
     print('----------------------------------------------')
     print('----------------------------------------------', file=txt_file)
@@ -462,12 +478,12 @@ def validation(epoch, test=True):
 best_accuracy = 0.0
 for epoch in range(num_epochs):  # loop over the dataset multiple times
 
-    if epoch == 150:
-        optimizer = optim.SGD(net.parameters(), lr=0.01)
+    if epoch == 30:
+        optimizer = optim.SGD(net.parameters(), lr=0.0005)
         print('Learning rate adapted') # TODO change learning rate (optimizer? after certain iterations)
-    if epoch == 225:
-        optimizer = optim.SGD(net.parameters(), lr=0.001)
-        print('Learning rate adapted')
+    #if epoch == 225:
+    #    optimizer = optim.SGD(net.parameters(), lr=0.001)
+    #    print('Learning rate adapted')
     
     # call training epoch once
     training_epoch(epoch)
