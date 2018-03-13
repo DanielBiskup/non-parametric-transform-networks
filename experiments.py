@@ -113,7 +113,7 @@ if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
 
 if args.name == 'yaml':
-    ss = str(timestamp) + '_NEWAccTEST_' + args.config.replace('.','_')
+    ss = str(timestamp) + '_TUESDAY_' + args.config.replace('.','_')
     
 spec_string = ss
 
@@ -295,7 +295,8 @@ if use_cuda:
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
-optimizer = optim.SGD(net.parameters(), lr=0.1)
+optimizer = optim.SGD(net.parameters(), lr=0.001)
+
 
 ############## Train the network  ######################
 
@@ -462,12 +463,12 @@ def validation(epoch, test=True):
 best_accuracy = 0.0
 for epoch in range(num_epochs):  # loop over the dataset multiple times
 
-    if epoch == 150:
-        optimizer = optim.SGD(net.parameters(), lr=0.01)
+    if epoch == 30:
+        optimizer = optim.SGD(net.parameters(), lr=0.0005)
         print('Learning rate adapted') # TODO change learning rate (optimizer? after certain iterations)
-    if epoch == 225:
-        optimizer = optim.SGD(net.parameters(), lr=0.001)
-        print('Learning rate adapted')
+    #if epoch == 225:
+    #    optimizer = optim.SGD(net.parameters(), lr=0.001)
+    #    print('Learning rate adapted')
     
     # call training epoch once
     training_epoch(epoch)
