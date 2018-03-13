@@ -34,7 +34,7 @@ class threeLayeredNPTN(nn.Module):
         self.pool2 = nn.MaxPool2d(2)
         #third layer 
         self.nptn3 = NPTN(n2, n3, G, filtersize, padding=padding)
-        self.batchnorm3 = nn.BatchNorm2d(n3) 
+        self.batchnorm3 = nn.BatchNorm2d(n3)
         self.prelu3 = nn.PReLU()
         #self.pool3 = nn.MaxPool2d(2)
         
@@ -61,7 +61,8 @@ class threeLayeredNPTN(nn.Module):
         
         x = x.view(-1, self.n3 * self.final_layer_dim)
         #print('shape third layer after view', x.size())
-        x = F.log_softmax(self.fc1(x), dim=1)
+        x = F.relu(self.fc1(x))
+        x = F.log_softmax(x, dim=1)
         #print('after softmax ', x.size())
         return x
     
@@ -114,7 +115,8 @@ class threeLayeredCNN(nn.Module):
         
         x = x.view(-1, self.n3 * self.final_layer_dim)
         #print('shape third layer after view', x.size())
-        x = F.log_softmax(self.fc1(x), dim=1)
+        x = F.relu(self.fc1(x))
+        x = F.log_softmax(x, dim=1)
         #print('after softmax ', x.size())
         return x
     
