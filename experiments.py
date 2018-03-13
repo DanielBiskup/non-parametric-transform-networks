@@ -302,6 +302,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.001)
 
 num_epochs = 300 # paper: 300
 
+log_file = open('../logs/grad_stats')
 def training_epoch(epoch):
     running_loss = 0.0
     correct = 0
@@ -329,6 +330,7 @@ def training_epoch(epoch):
             for name, parameter in net.named_parameters():
                 print('Name: {}, min {:.04f}, max {:.04f}, norm {:.04f}'.format(
                         name, parameter.grad.min().data[0], parameter.grad.max().data[0], parameter.grad.norm().data[0])
+                , file = log_file)
 
         optimizer.step()
 
