@@ -187,7 +187,7 @@ class threeLayeredNPTN(nn.Module):
         self.nptn3 = NPTN(n2, n3, G, filtersize, padding=padding)
         self.batchnorm3 = nn.BatchNorm2d(n3) 
         self.prelu3 = nn.PReLU()
-        self.pool3 = nn.MaxPool2d(2)
+        #self.pool3 = nn.MaxPool2d(2)
         
         n = self.num_flat_features(self.input_size)
         #print('num_flat_features = ' + str(n))
@@ -220,7 +220,7 @@ class threeLayeredNPTN(nn.Module):
         # third layer
         x = self.batchnorm3(self.nptn3(x))
         #print('after batchnorm 3 ', x.size())
-        x = self.pool3(self.prelu3(x))
+        x = self.prelu3(x)
         #print('shape third layer ', x.size())
         return x
     
@@ -254,7 +254,7 @@ class threeLayeredCNN(nn.Module):
         self.conv3 = nn.Conv2d(n2, n3, filtersize, padding=padding)
         self.batchnorm3 = nn.BatchNorm2d(n3) 
         self.prelu3 = nn.PReLU()
-        self.pool3 = nn.MaxPool2d(2)
+        #self.pool3 = nn.MaxPool2d(2)
         
         n = self.num_flat_features(self.input_size)
         
@@ -284,7 +284,7 @@ class threeLayeredCNN(nn.Module):
         # third layer
         x = self.batchnorm3(self.conv3(x))
         #print('after batchnorm 3 ', x.size())
-        x = self.pool3(self.prelu3(x))
+        x = self.prelu3(x)
         #print('shape third layer ', x.size())
         return x
     
