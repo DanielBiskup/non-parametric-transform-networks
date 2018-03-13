@@ -338,7 +338,7 @@ def training_epoch(epoch):
                 print('Name: {}, min {:.04f}, max {:.04f}, norm {:.04f}'.format(
                         name, parameter.grad.min().data[0], parameter.grad.max().data[0], parameter.grad.norm().data[0])
                 , file = log_file)
-
+            print ('------------------------------', file=log_file)
         optimizer.step()
 
         # print statistics
