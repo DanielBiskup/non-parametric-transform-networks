@@ -324,9 +324,11 @@ def training_epoch(epoch):
         outputs = net(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
-        for name, parameter in net.named_parameters():
-            print('Name: {}, min {:.04f}, max {:.04f}, norm {:.04f}'.format(
-                    name, parameter.grad.min().data[0], parameter.grad.max().data[0], parameter.grad.norm().data[0])
+        # print grad stats every once in a while
+        if i % 500 == 499:
+            for name, parameter in net.named_parameters():
+                print('Name: {}, min {:.04f}, max {:.04f}, norm {:.04f}'.format(
+                        name, parameter.grad.min().data[0], parameter.grad.max().data[0], parameter.grad.norm().data[0])
 
         optimizer.step()
 
