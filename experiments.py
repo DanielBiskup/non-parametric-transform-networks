@@ -302,7 +302,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.001)
 
 num_epochs = 300 # paper: 300
 
-log_file = open('../logs/grad_stats')
+log_file = open('logs/grad_stats', 'w')
 def training_epoch(epoch):
     running_loss = 0.0
     correct = 0
