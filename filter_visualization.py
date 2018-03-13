@@ -27,15 +27,25 @@ from scipy.ndimage.interpolation import rotate
 
 
 # for showing images
-def imshow(img):
+def imshow_mnist(img):
     img = img *0.1307 + 0.3081     # unnormalize for MNIST
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
-def show(img):
-    imshow(torchvision.utils.make_grid(img))
+def show_mnist(img):
+    imshow_mnist(torchvision.utils.make_grid(img))
     #npimg = img.numpy()
     #plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    
+
+def imshow_cifar(img):
+    img = img / 2 + 0.5     # unnormalize CIFAR
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+
+def show_cifar(img):
+    imshow_cifar(torchvision.utils.make_grid(img))    
+    
     
 # for showing filters
 def plot_kernels(tensor, num_cols=6): # plots all kernels (can take a while)
@@ -92,8 +102,5 @@ def example_plots_nptn(net, layer=2, num_samples=5): # TODO implement random sam
 
 #cnn_net = torch.load( '2018_03_09_11_35_25_mnist_1M_cnn_2layers36N1_16N2_5Kernel.final_model') # models run with CUDA also need CUDA for loading them again    
 #example_plots_cnn(cnn_net)
-
-nptn_net = torch.load('2018_03_12_13_49_53_NEWAccTEST_MNIST_rot_90_yaml.model')
-example_plots_nptn(nptn_net, layer=1, num_samples=10)
 
 
