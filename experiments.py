@@ -123,6 +123,13 @@ spec_string = ss
 
 # load dataset CIFAR10, normalize, crop and flip as in paper
 
+print ('Net')
+print (net)
+
+
+_yes = input('press enter to continue: ')
+
+
 ### Training Data Transforms
 transform_train_list = []
      #transforms.RandomHorizontalFlip()]
