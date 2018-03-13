@@ -61,7 +61,7 @@ class threeLayeredNPTN(nn.Module):
         
         x = x.view(-1, self.n3 * self.final_layer_dim)
         #print('shape third layer after view', x.size())
-        x = F.relu(self.fc1(x))
+        x = self.fc1(x)
         x = F.log_softmax(x, dim=1)
         #print('after softmax ', x.size())
         return x
@@ -115,7 +115,7 @@ class threeLayeredCNN(nn.Module):
         
         x = x.view(-1, self.n3 * self.final_layer_dim)
         #print('shape third layer after view', x.size())
-        x = F.relu(self.fc1(x))
+        x = self.fc1(x)
         x = F.log_softmax(x, dim=1)
         #print('after softmax ', x.size())
         return x
