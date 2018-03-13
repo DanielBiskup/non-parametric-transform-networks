@@ -28,7 +28,7 @@ class NPTN(nn.Module):
         super(NPTN, self).__init__()
         
         self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M, padding=padding) # in, out, kernel size, groups as in paper
-        self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
+        self.maxpool3d = nn.MaxPool3d((self.G, 1, 1))
         self.meanpool3d = nn.AvgPool3d((self.M, 1, 1)) # Is that the right pooling? - AvgPool3d?
         
         self.permutation = make_permutation(self.M, self.N)
@@ -252,7 +252,7 @@ class threeLayeredCNN(nn.Module):
         self.pool2 = nn.MaxPool2d(2)
         #third layer 
         self.conv3 = nn.Conv2d(n2, n3, filtersize, padding=padding)
-        self.batchnorm3 = nn.BatchNorm2d(n3) 
+        self.batchnorm3 = nn.BatchNorm2d(n3)
         self.prelu3 = nn.PReLU()
         #self.pool3 = nn.MaxPool2d(2)
         
@@ -282,9 +282,9 @@ class threeLayeredCNN(nn.Module):
         #print('shape second layer ', x.size())
         
         # third layer
-        x = self.batchnorm3(self.conv3(x))
+        #x = self.batchnorm3(self.conv3(x))
         #print('after batchnorm 3 ', x.size())
-        x = self.prelu3(x)
+        #x = self.prelu3(x)
         #print('shape third layer ', x.size())
         return x
     
