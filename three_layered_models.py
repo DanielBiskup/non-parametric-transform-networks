@@ -19,12 +19,12 @@ class threeLayeredNPTN(nn.Module):
         self.n3 = n3
         padding = int(filtersize/2) # needed if you want to use maxpooling 3 times
         if input_channel==3: # CIFAR
-            self.final_layer_dim = 4*4  # for image size of 32x32
+            self.final_layer_dim = 8*8  # for image size of 32x32
         else:
-            self.final_layer_dim = 3*3  # TODO correct?
+            self.final_layer_dim = 7*7  # TODO correct?
         # first layer 
         self.nptn = NPTN(input_channel, n1, G, filtersize, padding=padding)
-        self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
+        self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one? ---> yes
         self.pool = nn.MaxPool2d(2)
         self.prelu = nn.PReLU()
         # second layer
@@ -36,7 +36,7 @@ class threeLayeredNPTN(nn.Module):
         self.nptn3 = NPTN(n2, n3, G, filtersize, padding=padding)
         self.batchnorm3 = nn.BatchNorm2d(n3) 
         self.prelu3 = nn.PReLU()
-        self.pool3 = nn.MaxPool2d(2)
+        #self.pool3 = nn.MaxPool2d(2)
         
         self.fc1 = nn.Linear(n3 * self.final_layer_dim, 10)
 
@@ -56,7 +56,7 @@ class threeLayeredNPTN(nn.Module):
         # third layer
         x = self.batchnorm3(self.nptn3(x))
         #print('after batchnorm 3 ', x.size())
-        x = self.pool3(self.prelu3(x))
+        #x = self.pool3(self.prelu3(x))
         #print('shape third layer ', x.size())
         
         x = x.view(-1, self.n3 * self.final_layer_dim)
@@ -72,12 +72,12 @@ class threeLayeredCNN(nn.Module):
         self.n3 = n3
         padding = int(filtersize/2) # needed if you want to use maxpooling 3 times
         if input_channel==3: # CIFAR
-            self.final_layer_dim = 4*4  # for image size of 32x32
+            self.final_layer_dim = 8*8  # for image size of 32x32
         else:
-            self.final_layer_dim = 3*3  # TODO correct?
+            self.final_layer_dim = 7*7  # TODO correct?
         # first layer 
         self.conv1 = nn.Conv2d(input_channel, n1, filtersize, padding=padding)
-        self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
+        self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one? ---> yes
         self.pool = nn.MaxPool2d(2)
         self.prelu = nn.PReLU()
         # second layer
@@ -89,7 +89,7 @@ class threeLayeredCNN(nn.Module):
         self.conv3 = nn.Conv2d(n2, n3, filtersize, padding=padding)
         self.batchnorm3 = nn.BatchNorm2d(n3) 
         self.prelu3 = nn.PReLU()
-        self.pool3 = nn.MaxPool2d(2)
+        #self.pool3 = nn.MaxPool2d(2)
         
         self.fc1 = nn.Linear(n3 * self.final_layer_dim, 10)
 
@@ -109,7 +109,7 @@ class threeLayeredCNN(nn.Module):
         # third layer
         x = self.batchnorm3(self.conv3(x))
         #print('after batchnorm 3 ', x.size())
-        x = self.pool3(self.prelu3(x))
+        #x = self.pool3(self.prelu3(x))
         #print('shape third layer ', x.size())
         
         x = x.view(-1, self.n3 * self.final_layer_dim)
