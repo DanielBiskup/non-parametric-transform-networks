@@ -333,7 +333,7 @@ class rotConv(nn.Module):
         return x    
     
     
-    
+'''  
     
 class rotNet(nn.Module):
     def __init__(self, filtersize=5, G=4 , n1=9, n2=16, input_channel=3):
@@ -363,7 +363,7 @@ class rotNet(nn.Module):
         
         def features(self, x):
         # first layer
-        x = self.batchnorm(self.conv1(x))
+        #x = self.batchnorm(self.conv1(x))
         #print('batchnorm ', x.size())
         x = self.pool(self.prelu(x))
         #print('shape first layer ', x.size())
@@ -386,4 +386,4 @@ imshow(torchvision.utils.make_grid(images))
 # print labels
 print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 '''
->>>>>>> a453b8327d5c1df2bd855cbf8ef4bcc67f45a359
+

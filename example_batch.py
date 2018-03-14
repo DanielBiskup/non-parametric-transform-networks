@@ -123,11 +123,12 @@ show_cifar(whatever.data)
 # for kernels
 net = torch.load('2018_03_12_13_49_53_NEWAccTEST_MNIST_rot_90_yaml.model')
 cnn_net = torch.load( '2018_03_09_11_35_25_mnist_1M_cnn_2layers36N1_16N2_5Kernel.final_model')
-t = net.nptn.conv1.weight.data.cpu()[:1]
+t = net.nptn2.conv1.weight.data.cpu()
 kernel3d = cnn_net.conv2.weight[:1,:3].cpu()
 
 # duplicate kernel
 print(t.shape)
+print(kernel3d.shape)
 plot_kernels(t.numpy())
 
 flow_field2 = affine_grid(torch.Tensor(make_rotation_batch(45,1)), t.size())
@@ -138,9 +139,10 @@ plot_kernels(whatever2.data.numpy())
 
 ####   make nice example kernel    ########
 k = np.concatenate((np.ones((2,5)),np.zeros((3,5))),0)
+k[0,0] = 1
 kn = 0.5*np.ones((5,5))
-ki = np.concatenate((0.6*np.ones((3,5)),0.3*np.ones((2,5))),0)
-k3d = np.array([k,ki,kn])
+ki = np.concatenate((0.6*np.ones((5,3)),0.3*np.ones((5,2))),1)
+k3d = np.array([kn,ki,k])
 k = torch.unsqueeze(torch.unsqueeze(torch.Tensor(k),0),0)
 k3d = torch.unsqueeze(torch.Tensor(k3d),0)
 k = Variable(k)
@@ -176,6 +178,7 @@ plot_kernels(resim.data.numpy(), num_cols=g)
 # for RGB images (using 3d kernels)
 kernel3d = k3d
 g = 5
+N=3
 num_imgs = 1
 cif_imgs = pic #images[:num_imgs]
 show_cifar(cif_imgs)
@@ -183,14 +186,110 @@ plot_kernels(kernel3d.data.numpy())
 
 rot_mats_3 = torch.Tensor(make_rotations(-180,180,g))
 rotated_kernels_3 = torch.cat([rotate(torch.unsqueeze(rotation,0), kernel3d) for rotation in rot_mats_3])
-right_shape = rotated_kernels_3.shape
+#right_shape = rotated_kernels_3.shape
 #rotated_kernels_3 = rotated_kernels_3.permute(1,0,2,3) # reorders kernel such that the rotated kernels are in a row
 #rotated_kernels_3 = rotated_kernels_3.contiguous().view(right_shape)
 plot_kernels(rotated_kernels_3.data.numpy(), num_cols=3)
 
-resim_cif = F.conv2d(Variable(cif_imgs), rotated_kernels_3)
+rot_mats_more = torch.Tensor(make_rotations(-180,180,g))
+rotated_kernels_more =  torch.cat([rotate(torch.unsqueeze(rotation,0), kernel) for rotation in rot_mats_more])
+#resim_cif = F.conv2d(Variable(cif_imgs), rotated_kernels_3, groups=3)
+resim_cif = F.conv2d(Variable(cif_imgs), rotated_kernels, groups=3)
 plot_kernels(resim_cif.data.numpy(), num_cols=g)
 
+############    New NPTN rotation test area    ##############
+
+num_imgs=4
+cif_imgs = images[:num_imgs]
+
+####   make nice example kernel    ########
+k = np.concatenate((np.ones((2,5)),np.zeros((3,5))),0)
+kn = 0.5*np.ones((5,5))
+kn[2,2] = 1
+ki = np.concatenate((0.6*np.ones((5,3)),0.3*np.ones((5,2))),1)
+kl = np.concatenate((np.ones((5,1)),np.zeros((5,1)),np.ones((5,1)),np.zeros((5,1)),np.ones((5,1))),1)
+kh = np.concatenate((np.ones((5,1)),np.zeros((5,3)),np.ones((5,1))),1)
+
+k3d = np.array([kn,ki,k])
+k6d = np.array([kl,kn,ki,kn,k,kh])
+
+k = torch.unsqueeze(torch.unsqueeze(torch.Tensor(k),0),0)
+k3d = torch.unsqueeze(torch.Tensor(k3d),0)
+k6d = torch.unsqueeze(torch.Tensor(k6d),0)
+k = Variable(k)
+k3d = Variable(k3d)
+k6d = Variable(k6d)
+
+kd3 = k3d.permute(1,0,2,3)
+kd6 = k6d.permute(1,0,2,3)
+plot_kernels(kd3.data.numpy())
+plot_kernels(kd6.data.numpy())
+
+g = 5
+N=1
+M=3
+#rot_mats = torch.Tensor(make_rotations(-180,180,g))
+#rotated_kernels = torch.cat([rotate(torch.unsqueeze(rotation,0), kernel) for rotation in rot_mats])
+#right_shape = rotated_kernels.shape
+
+#rotated_kernels_3 = rotated_kernels_3.permute(1,0,2,3) # reorders kernel such that the rotated kernels are in a row
+#rotated_kernels_3 = rotated_kernels_3.contiguous().view(right_shape)
+#plot_kernels(rotated_kernels_3.data.numpy(), num_cols=3)
+
+    
+    
+rot_mats_more = torch.Tensor(make_rotations(-80,80,g))
+rotated_kernels_more =  torch.cat([rotate(torch.unsqueeze(rotation,0), k3d) for rotation in rot_mats_more])
+
+#resim_cif = F.conv2d(Variable(cif_imgs), rotated_kernels_3, group
+plot_kernels(rotated_kernels_more.data.numpy())
+print(rotated_kernels_more.shape)
+
+r_k_m = rotated_kernels_more.view(g,M*N,5,5)
+plot_kernels(r_k_m.data.numpy(), num_cols=5)
+r_k_m = torch.transpose(r_k_m, 0,1)
+plot_kernels(r_k_m.data.numpy(), num_cols=5)
+#print(rotated_kernels_more.shape)
+r_k_m_flat = r_k_m.contiguous().view(g*N,1,5,5)
+
+plot_kernels(r_k_m_flat.data.numpy(), num_cols=5)
+print(r_k_m_flat.shape)
+
+resim_cif = F.conv2d(Variable(cif_imgs), r_k_m_flat, groups=3)
+plot_kernels(resim_cif.data.numpy(), num_cols=g)
+
+
+
+
+def get_rotated_kernels(kernels, G, rot_max, rot_min,):
+    num_kernels = kernels.shape[0]
+    kernel_size = kernels.shape[-1]
+    
+    # make rotation matrices
+    rot_mats = torch.Tensor(make_rotations(rot_min,rot_max,G))
+    
+    # rotate kernels
+    kernelsPM = kernels.permute(1,0,2,3) # from (N,1,ks,ks) to (1,N,ks,ks)
+    rot_kernelsPM = torch.cat([rotate(torch.unsqueeze(rotation,0), kernelsPM) for rotation in rot_mats])
+    
+    # sort kernels in appropiate order
+    rot_kernels = rot_kernelsPM.view(G, num_kernels, kernel_size, kernel_size)
+    rot_kernels = torch.transpose(rot_kernels, 0, 1)
+    rot_kernels = rot_kernels.contiguous().view(G*num_kernels, 1, kernel_size, kernel_size)
+    
+    return rot_kernels
+    
+# number of kernels passed == number of channels leaving
+def forward_pass(imgs, kernels=kd3, M=3, G=4, rot_max=-90, rot_min=90, plot=False):
+    rot_k = get_rotated_kernels(kernels, G, rot_max, rot_min)   
+    convoluted_imgs = F.conv2d(Variable(imgs), rot_k, groups=M)
+    
+    if plot:
+        plot_kernels(rot_k.data.numpy(), num_cols=G)
+        plot_kernels(convoluted_imgs.data.numpy(), num_cols=G)
+    return convoluted_imgs
+
+conv_imgs = forward_pass(images_mnist[:4], kernels=k, M=1, G=5, plot=True)
 
 ############## TEST AREA ######################################################
 ''''
