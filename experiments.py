@@ -113,7 +113,7 @@ if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
 
 if args.name == 'yaml':
-    ss = str(timestamp) + '_TUESDAY_' + args.config.replace('.','_')
+    ss = str(timestamp) + '_LIGHT_' + args.config.replace('.','_')
     
 spec_string = ss
 
@@ -131,8 +131,7 @@ _yes = input('press enter to continue: ')
 
 
 ### Training Data Transforms
-transform_train_list = []
-     #transforms.RandomHorizontalFlip()]
+transform_train_list = [transforms.RandomHorizontalFlip()]
     
 # Train:Translation
 if is_set(d,'translation_train'):
@@ -160,8 +159,7 @@ transform_train = transforms.Compose( transform_train_list )
 print(transform_train)
 
 ### Test Data Transforms
-transform_test_list = []
-     #transforms.RandomHorizontalFlip()]
+transform_test_list = [transforms.RandomHorizontalFlip()]
 
 # Don't use translation or rotation during test
 if is_set(d,'rotation_test'):
@@ -333,12 +331,12 @@ def training_epoch(epoch):
         loss = criterion(outputs, labels)
         loss.backward()
         # print grad stats every once in a while
-        if i % 500 == 499:
-            for name, parameter in net.named_parameters():
-                print('Name: {}, min {:.04f}, max {:.04f}, norm {:.04f}'.format(
-                        name, parameter.grad.min().data[0], parameter.grad.max().data[0], parameter.grad.norm().data[0])
-                , file = log_file)
-            print ('------------------------------', file=log_file)
+        # if i % 500 == 499:
+            # for name, parameter in net.named_parameters():
+            #     print('Name: {}, min {:.04f}, max {:.04f}, norm {:.04f}'.format(
+            #             name, parameter.grad.min().data[0], parameter.grad.max().data[0], parameter.grad.norm().data[0])
+            #     , file = log_file)
+            # print ('------------------------------', file=log_file)
         optimizer.step()
 
         # print statistics
