@@ -361,7 +361,7 @@ class rotNet(nn.Module):
         
         self.fc1 = nn.Linear(n, 10)
         
-        def features(self, x):
+    def features(self, x):
         # first layer
         #x = self.batchnorm(self.conv1(x))
         #print('batchnorm ', x.size())
@@ -382,8 +382,12 @@ class rotNet(nn.Module):
         return x
 
 # show images
-imshow(torchvision.utils.make_grid(images))
+# imshow(torchvision.utils.make_grid(images))
 # print labels
+<<<<<<< HEAD
 print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 '''
+
+
+# print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
