@@ -51,7 +51,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "3_layer_nptn_48_3_k5.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "MNIST_CNN_rot_60.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 parser.add_argument('-n', '--name', default = "yaml", type=str, help='yaml: Will use the yaml file name for folder and file names. n will use number of layers as file name')
@@ -113,7 +113,7 @@ if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
 
 if args.name == 'yaml':
-    ss = str(timestamp) + '_FRIDAY_' + args.config.replace('.','_')
+    ss = str(timestamp) + '_LIGHT_' + args.config.replace('.','_')
     
 spec_string = ss
 
@@ -123,9 +123,15 @@ spec_string = ss
 
 # load dataset CIFAR10, normalize, crop and flip as in paper
 
+print ('Net')
+print (net)
+
+
+_yes = input('press enter to continue: ')
+
+
 ### Training Data Transforms
-transform_train_list = [
-     transforms.RandomHorizontalFlip()]
+transform_train_list = [transforms.RandomHorizontalFlip()]
     
 # Train:Translation
 if is_set(d,'translation_train'):
@@ -150,10 +156,10 @@ elif d['dataset'] == 'mnist':
     transform_train_list.append(transforms.Normalize((0.1307,), (0.3081,)))
 
 transform_train = transforms.Compose( transform_train_list )
+print(transform_train)
 
 ### Test Data Transforms
-transform_test_list = [
-     transforms.RandomHorizontalFlip()]
+transform_test_list = [transforms.RandomHorizontalFlip()]
 
 # Don't use translation or rotation during test
 if is_set(d,'rotation_test'):
@@ -178,6 +184,7 @@ elif d['dataset'] == 'mnist':
     transform_test_list.append(transforms.Normalize((0.1307,), (0.3081,)))
 
 transform_test = transforms.Compose( transform_test_list )
+print(transform_test)
 
 ##### Load Data for Train and Test:
 num_workers = 4
@@ -201,9 +208,9 @@ elif d['dataset'] == 'mnist':
     testset = torchvision.datasets.MNIST(root='./data', train=False,
                                            download=True, transform=transform_test)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                             shuffle=False, num_workers=num_workers)
+                                             shuffle=True, num_workers=num_workers)
 
-###Shared code: ###############################################################
+###Shared code: ########################################################pool2#######
 ###############################################################################
 
 ## Set up files and directories for output:
@@ -293,12 +300,14 @@ if use_cuda:
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
-optimizer = optim.SGD(net.parameters(), lr=0.1)
+optimizer = optim.SGD(net.parameters(), lr=0.001)
+
 
 ############## Train the network  ######################
 
 num_epochs = 300 # paper: 300
 
+log_file = open('logs/grad_stats', 'w')
 def training_epoch(epoch):
     running_loss = 0.0
     correct = 0
@@ -321,6 +330,13 @@ def training_epoch(epoch):
         outputs = net(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
+        # print grad stats every once in a while
+        # if i % 500 == 499:
+            # for name, parameter in net.named_parameters():
+            #     print('Name: {}, min {:.04f}, max {:.04f}, norm {:.04f}'.format(
+            #             name, parameter.grad.min().data[0], parameter.grad.max().data[0], parameter.grad.norm().data[0])
+            #     , file = log_file)
+            # print ('------------------------------', file=log_file)
         optimizer.step()
 
         # print statistics
@@ -351,7 +367,7 @@ def training_epoch(epoch):
             )
             
             running_loss = 0.0
-    accuracy = (100 * correct / trainloader.dataset.train_data.shape[0])  
+    accuracy = (100 * correct / trainloader.dataset.train_data.shape[0])
 
     print('----------------------------------------------')
     print('----------------------------------------------', file=txt_file)
@@ -402,8 +418,7 @@ def validation(epoch, test=True):
         correct += (predicted == labels.data).sum()
 
     accuracy = (100 * correct / total)
-    NLLLoss = running_loss /(dataset_size/batch_size)    
-    
+    NLLLoss = running_loss / (dataset_size/batch_size)
 
     if test:
         print('Accuracy of the network on the 10000 test images: %d %%' % accuracy)
@@ -461,19 +476,20 @@ def validation(epoch, test=True):
 best_accuracy = 0.0
 for epoch in range(num_epochs):  # loop over the dataset multiple times
 
-    if epoch == 150:
-        optimizer = optim.SGD(net.parameters(), lr=0.01)
+    if epoch == 30:
+        optimizer = optim.SGD(net.parameters(), lr=0.0005)
         print('Learning rate adapted') # TODO change learning rate (optimizer? after certain iterations)
-    if epoch == 225:
-        optimizer = optim.SGD(net.parameters(), lr=0.001)
-        print('Learning rate adapted')
+    #if epoch == 225:
+    #    optimizer = optim.SGD(net.parameters(), lr=0.001)
+    #    print('Learning rate adapted')
     
     # call training epoch once
     training_epoch(epoch)
     
     # call validation batch every 5th epoch
     if (epoch + 1) % 1 == 0:
-        accuracy = validation(epoch)
+        accuracy = validation(epoch, test=True)
+        validation(epoch, test=False)
         # Save the model:
         if ( accuracy > best_accuracy ):
             best_accuracy = accuracy

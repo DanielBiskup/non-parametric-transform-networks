@@ -16,62 +16,38 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from network import twoLayeredNPTN
+from network import threeLayeredNPTN
+from network import twoLayeredCNN
+from network import threeLayeredCNN
+import random
 #from baseline_cnn import twoLayeredCNN
 #from /../pytorch-cnn-visualizations/src/cnn_layer_visualization import CNNLayerVisualization
+from scipy.ndimage.interpolation import rotate
 
-def imshow(img):
+
+# for showing images
+def imshow_mnist(img):
     img = img *0.1307 + 0.3081     # unnormalize for MNIST
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
-
-def show(images):
-    imshow(torchvision.utils.make_grid(images))    
-
-class twoLayeredCNN(nn.Module):
-    def __init__(self, filtersize):
-        super(twoLayeredCNN, self).__init__()
-        self.final_layer_dim = (7-np.int(filtersize/1.7))**2   # works for filtersizes 3,5,7
-        # first layer 
-        self.conv1 = nn.Conv2d(3, 48, filtersize) # TODO maybe change filter size
-        self.batchnorm = nn.BatchNorm2d(48)   # is 2d the right one?
-        self.pool = nn.MaxPool2d(2)
-        self.prelu = nn.PReLU()
-        # second layer
-        self.conv2 = nn.Conv2d(48, 16, filtersize)
-        self.batchnorm2 = nn.BatchNorm2d(16) 
-        self.prelu2 = nn.PReLU()
-        self.pool2 = nn.MaxPool2d(2)
-         
-        self.fc1 = nn.Linear(16 * self.final_layer_dim, 10)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        #print('x after conv ', x.size())
-        x = self.batchnorm(x)
-        #print('batchnorm ', x.size())
-        #x = F.prelu(self.nptn(x), 0.1) 
-        x = self.pool(self.prelu(x))
-        #print('shape first layer ', x.size())
-        x = self.batchnorm2(self.conv2(x))
-        #print('after batchnorm 2 ', x.size())
-        x = self.pool2(self.prelu2(x))
-        #print('shape second layer ', x.size())
-        
-        x = x.view(-1, 16 * self.final_layer_dim)
-        #print('shape second layer ', x.size())
-        x = F.log_softmax(self.fc1(x), dim=1)
-        #print('after softmax ', x.size())
-        return x
-    
+def show_mnist(img):
+    imshow_mnist(torchvision.utils.make_grid(img))
+    #npimg = img.numpy()
+    #plt.imshow(np.transpose(npimg, (1, 2, 0)))
     
 
-#net = twoLayeredCNN(5)
-net = torch.load( 'CNN_test_model.final_CNN_model') # models run with CUDA also need CUDA for loading them again
+def imshow_cifar(img):
+    img = img / 2 + 0.5     # unnormalize CIFAR
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
-
-
-
+def show_cifar(img):
+    imshow_cifar(torchvision.utils.make_grid(img))    
+    
+    
+# for showing filters
 def plot_kernels(tensor, num_cols=6): # plots all kernels (can take a while)
     if not tensor.ndim==4:
         raise Exception("assumes a 4D tensor")
@@ -93,7 +69,38 @@ def plot_kernels(tensor, num_cols=6): # plots all kernels (can take a while)
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
     plt.show()
     
+
+#plot a few kernels from a model
+def example_plots_cnn(net, layer=2, num_samples=5):
+    if layer == 1:
+        t = net.conv1.weight.data.cpu().numpy()[:1, :num_samples]
+    if layer == 2:    
+        t = net.conv2.weight.data.cpu().numpy()[:1, :num_samples]
+    if layer == 3:    
+        t = net.conv3.weight.data.cpu().numpy()[:1, :num_samples]
+    
+    plot_kernels(t, num_cols=5)
+  
+    
+def example_plots_nptn(net, layer=2, num_samples=5): # TODO implement random samples, random=False): 
+
+    if layer == 1:
+        g = net.nptn.G
+        #num_filters = net.nptn.conv1.weight.shape[0]
+        #if random:
+        #   start = 
+        t = net.nptn.conv1.weight.data.cpu().numpy()[:num_samples*g]       
+    if layer == 2:    
+        g = net.nptn2.G
+        t = net.nptn2.conv1.weight.data.cpu().numpy()[:num_samples*g]    
+    if layer == 3:    
+        g = net.nptn3.G
+        t = net.nptn3.conv1.weight.data.cpu().numpy()[:num_samples*g]       
+    
+    plot_kernels(t, num_cols=g)
   
 
-plot_kernels(net.conv1.)
+#cnn_net = torch.load( '2018_03_09_11_35_25_mnist_1M_cnn_2layers36N1_16N2_5Kernel.final_model') # models run with CUDA also need CUDA for loading them again    
+#example_plots_cnn(cnn_net)
+
 

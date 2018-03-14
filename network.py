@@ -27,7 +27,7 @@ class NPTN(nn.Module):
         self.G=G
         
         self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M, padding=padding) # in, out, kernel size, groups as in paper
-        self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
+        self.maxpool3d = nn.MaxPool3d((self.G, 1, 1))
         self.meanpool3d = nn.AvgPool3d((self.M, 1, 1)) # Is that the right pooling? - AvgPool3d?
         
         self.permutation = make_permutation(self.M, self.N)
@@ -106,9 +106,9 @@ class twoLayeredNPTN(nn.Module):
         return num_features
     
 class twoLayeredCNN(nn.Module):
-    def __init__(self, filtersize, in_channels=3, N1=48, N2=16, input_channel=3):
+    def __init__(self, filtersize, in_channels=3, N1=48, N2=16):
         super(twoLayeredCNN, self).__init__()
-        if input_channel==3: # CIFAR
+        if in_channels==3: # CIFAR
             self.input_size=(3,32,32)
         else:
             self.input_size=(1,28,28)
@@ -186,7 +186,7 @@ class threeLayeredNPTN(nn.Module):
         self.nptn3 = NPTN(n2, n3, G, filtersize, padding=padding)
         self.batchnorm3 = nn.BatchNorm2d(n3) 
         self.prelu3 = nn.PReLU()
-        self.pool3 = nn.MaxPool2d(2)
+        #self.pool3 = nn.MaxPool2d(2)
         
         n = self.num_flat_features(self.input_size)
         #print('num_flat_features = ' + str(n))
@@ -219,7 +219,7 @@ class threeLayeredNPTN(nn.Module):
         # third layer
         x = self.batchnorm3(self.nptn3(x))
         #print('after batchnorm 3 ', x.size())
-        x = self.pool3(self.prelu3(x))
+        x = self.prelu3(x)
         #print('shape third layer ', x.size())
         return x
     
@@ -251,9 +251,9 @@ class threeLayeredCNN(nn.Module):
         self.pool2 = nn.MaxPool2d(2)
         #third layer 
         self.conv3 = nn.Conv2d(n2, n3, filtersize, padding=padding)
-        self.batchnorm3 = nn.BatchNorm2d(n3) 
+        self.batchnorm3 = nn.BatchNorm2d(n3)
         self.prelu3 = nn.PReLU()
-        self.pool3 = nn.MaxPool2d(2)
+        #self.pool3 = nn.MaxPool2d(2)
         
         n = self.num_flat_features(self.input_size)
         
@@ -281,9 +281,9 @@ class threeLayeredCNN(nn.Module):
         #print('shape second layer ', x.size())
         
         # third layer
-        x = self.batchnorm3(self.conv3(x))
+        #x = self.batchnorm3(self.conv3(x))
         #print('after batchnorm 3 ', x.size())
-        x = self.pool3(self.prelu3(x))
+        #x = self.prelu3(x)
         #print('shape third layer ', x.size())
         return x
     
@@ -292,6 +292,7 @@ class threeLayeredCNN(nn.Module):
         x = x.view(x.size(0), -1)
         x = F.log_softmax(self.fc1(x), dim=1)
         return x
+<<<<<<< HEAD
     
 ############## TEST AREA ######################################################
 ''''
@@ -325,13 +326,97 @@ classes = ('plane', 'car', 'bird', 'cat',
 
 
 # show a few images, taken from tutorial
+=======
+   
+####   from here on not functional stuff !!       #####
+        
+def rotate(rot_mat, img):
+    flow_field = affine_grid(torch.Tensor(rot_mat), img.size())
+    return grid_sample(img, flow_field)
+    
+    
+class rotConv(nn.Module):
+    def __init__(self, M, N, G, filtersize, rot_min=-180, rot_max=180, padding=0):
 
-# get some random training images
-dataiter = iter(trainloader)
-images, labels = dataiter.next()
+        super(rotConv, self).__init__()
+        self.M=M
+        self.N=N 
+        self.G=G
+        
+        rot_mats = torch.Tensor(make_rotations(rot_min,rot_max,self.G))
+        rotated_kernels = torch.cat([rotate(torch.unsqueeze(rotation,0), kernel) for rotation in rot_mats])
+
+        #self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M, padding=padding) # in, out, kernel size, groups as in paper
+        #self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
+        #self.meanpool3d = nn.AvgPool3d((self.M, 1, 1)) # Is that the right pooling? - AvgPool3d?
+        
+        #self.permutation = make_permutation(self.M, self.N)
+
+    def forward(self, x):
+        #print('\nShape of x ', x.size())
+        x = self.conv1(x)
+        #print('Shape after convolution', x.size())
+        x = self.maxpool3d(x)
+        #print("Shape after MaxPool3d: ", x.size()) # dimension should be M*N
+        
+        #print('permutation ', permutation)
+        x = x[:, self.permutation] # reorder channels
+        #print("Shape after Channel reordering: ", x.size())
+        x = self.meanpool3d(x)
+        #print('Shape after Mean Pooling: ', x.size())
+        return x    
+    
+    
+    
+    
+class rotNet(nn.Module):
+    def __init__(self, filtersize=5, G=4 , n1=9, n2=16, input_channel=3):
+        super(rotNet, self).__init__()
+>>>>>>> 25a66e08cc8017e487eda0e7de7d7689ffa21183
+
+        if input_channel==3: # CIFAR
+            self.input_size=(3,32,32)
+        else:
+            self.input_size=(1,28,28)
+        #self.n3 = n3
+        padding = int(filtersize/2) # do or don't ?
+        
+        # first layer 
+        self.conv1 = nn.Conv2d(input_channel, n1, filtersize, padding=padding)
+        self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
+        self.pool = nn.MaxPool2d(2)
+        self.prelu = nn.PReLU()
+        # second layer
+        self.conv2 = nn.Conv2d(n1, n2, filtersize, padding=padding)
+        self.batchnorm2 = nn.BatchNorm2d(n2) 
+        self.prelu2 = nn.PReLU()
+        self.pool2 = nn.MaxPool2d(2)
+        
+        n = self.num_flat_features(self.input_size)
+        
+        self.fc1 = nn.Linear(n, 10)
+        
+    def features(self, x):
+        # first layer
+        x = self.batchnorm(self.conv1(x))
+        #print('batchnorm ', x.size())
+        x = self.pool(self.prelu(x))
+        #print('shape first layer ', x.size())
+        
+        # second layer
+        x = self.batchnorm2(self.conv2(x))
+        #print('after batchnorm 2 ', x.size())
+        x = self.pool2(self.prelu2(x))
+        #print('shape second layer ', x.size())
+        return x
+    
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = F.log_softmax(self.fc1(x), dim=1)
+        return x
 
 # show images
-imshow(torchvision.utils.make_grid(images))
+# imshow(torchvision.utils.make_grid(images))
 # print labels
-print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
-'''
+# print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
