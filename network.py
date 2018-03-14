@@ -21,11 +21,10 @@ def make_permutation(M,N):
 """ Non-parametric transformation network layer """
 class NPTN(nn.Module):
     def __init__(self, M, N, G, filtersize, padding=0):
+        super(NPTN, self).__init__()
         self.M=M
         self.N=N 
         self.G=G
-        
-        super(NPTN, self).__init__()
         
         self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M, padding=padding) # in, out, kernel size, groups as in paper
         self.maxpool3d = nn.MaxPool3d((self.G, 1, 1))
@@ -293,6 +292,41 @@ class threeLayeredCNN(nn.Module):
         x = x.view(x.size(0), -1)
         x = F.log_softmax(self.fc1(x), dim=1)
         return x
+<<<<<<< HEAD
+    
+############## TEST AREA ######################################################
+''''
+def imshow(img):
+    img = img / 2 + 0.5     # unnormalize
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+'''
+
+'''
+print(torch.cuda.is_available()) # is not and code can not use cuda (yet?)
+
+
+# load dataset CIFAR10, if not available download and extract
+# images are normalized to range [-1,1], taken from tutorial 
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                        download=True, transform=transform)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
+                                          shuffle=True, num_workers=2)
+
+testset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                       download=True, transform=transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=4,
+                                         shuffle=False, num_workers=2)
+
+classes = ('plane', 'car', 'bird', 'cat',
+           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
+
+# show a few images, taken from tutorial
+=======
    
 ####   from here on not functional stuff !!       #####
         
@@ -338,6 +372,7 @@ class rotConv(nn.Module):
 class rotNet(nn.Module):
     def __init__(self, filtersize=5, G=4 , n1=9, n2=16, input_channel=3):
         super(rotNet, self).__init__()
+>>>>>>> 25a66e08cc8017e487eda0e7de7d7689ffa21183
 
         if input_channel==3: # CIFAR
             self.input_size=(3,32,32)
