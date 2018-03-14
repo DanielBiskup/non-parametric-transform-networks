@@ -292,87 +292,11 @@ class threeLayeredCNN(nn.Module):
         x = x.view(x.size(0), -1)
         x = F.log_softmax(self.fc1(x), dim=1)
         return x
-<<<<<<< HEAD
-    
-############## TEST AREA ######################################################
-''''
-def imshow(img):
-    img = img / 2 + 0.5     # unnormalize
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-'''
 
-'''
-print(torch.cuda.is_available()) # is not and code can not use cuda (yet?)
-
-
-# load dataset CIFAR10, if not available download and extract
-# images are normalized to range [-1,1], taken from tutorial 
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                        download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
-                                          shuffle=True, num_workers=2)
-
-testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                       download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=4,
-                                         shuffle=False, num_workers=2)
-
-classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
-
-# show a few images, taken from tutorial
-=======
-   
-####   from here on not functional stuff !!       #####
-        
-def rotate(rot_mat, img):
-    flow_field = affine_grid(torch.Tensor(rot_mat), img.size())
-    return grid_sample(img, flow_field)
-    
-    
-class rotConv(nn.Module):
-    def __init__(self, M, N, G, filtersize, rot_min=-180, rot_max=180, padding=0):
-
-        super(rotConv, self).__init__()
-        self.M=M
-        self.N=N 
-        self.G=G
-        
-        rot_mats = torch.Tensor(make_rotations(rot_min,rot_max,self.G))
-        rotated_kernels = torch.cat([rotate(torch.unsqueeze(rotation,0), kernel) for rotation in rot_mats])
-
-        #self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M, padding=padding) # in, out, kernel size, groups as in paper
-        #self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
-        #self.meanpool3d = nn.AvgPool3d((self.M, 1, 1)) # Is that the right pooling? - AvgPool3d?
-        
-        #self.permutation = make_permutation(self.M, self.N)
-
-    def forward(self, x):
-        #print('\nShape of x ', x.size())
-        x = self.conv1(x)
-        #print('Shape after convolution', x.size())
-        x = self.maxpool3d(x)
-        #print("Shape after MaxPool3d: ", x.size()) # dimension should be M*N
-        
-        #print('permutation ', permutation)
-        x = x[:, self.permutation] # reorder channels
-        #print("Shape after Channel reordering: ", x.size())
-        x = self.meanpool3d(x)
-        #print('Shape after Mean Pooling: ', x.size())
-        return x    
-    
-    
-'''  
     
 class rotNet(nn.Module):
     def __init__(self, filtersize=5, G=4 , n1=9, n2=16, input_channel=3):
         super(rotNet, self).__init__()
->>>>>>> 25a66e08cc8017e487eda0e7de7d7689ffa21183
 
         if input_channel==3: # CIFAR
             self.input_size=(3,32,32)
@@ -419,7 +343,7 @@ class rotNet(nn.Module):
 # show images
 # imshow(torchvision.utils.make_grid(images))
 # print labels
-<<<<<<< HEAD
+
 print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 '''
 
