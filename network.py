@@ -21,11 +21,10 @@ def make_permutation(M,N):
 """ Non-parametric transformation network layer """
 class NPTN(nn.Module):
     def __init__(self, M, N, G, filtersize, padding=0):
+        super(NPTN, self).__init__()
         self.M=M
         self.N=N 
         self.G=G
-        
-        super(NPTN, self).__init__()
         
         self.conv1 = nn.Conv2d(self.M, self.M*self.N*self.G, filtersize, groups=self.M, padding=padding) # in, out, kernel size, groups as in paper
         self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
@@ -294,12 +293,6 @@ class threeLayeredCNN(nn.Module):
         x = F.log_softmax(self.fc1(x), dim=1)
         return x
     
-        
-    
-    
-
-
-
 ############## TEST AREA ######################################################
 ''''
 def imshow(img):
