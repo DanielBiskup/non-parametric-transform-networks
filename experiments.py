@@ -92,6 +92,7 @@ elif d['dataset'] == 'cifar10':
     ss = ss + '_cifar10_3M'
     image_size = 32
 
+#NPTN
 if d['type'] == 'nptn':
     ss = ss + '_nptn_' + str(d['layers']) + 'layers'
     if   d['layers'] == 2:
@@ -100,9 +101,19 @@ if d['type'] == 'nptn':
     elif d['layers'] == 3:
         net = threeLayeredNPTN(filtersize=d['filtersize'], G=d['g'] ,n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
         ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['g']) + 'G_' + str(d['filtersize']) + "Kernel"
-
+#CNN
 elif d['type'] == 'cnn':
     ss = ss + '_cnn_' + str(d['layers']) + 'layers'
+    if d['layers'] == 2:
+        net = twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel"
+    elif d['layers'] == 3:
+        net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
+
+#ROTN #NPRN Non-Parametric Rotation Network      #TODO   
+elif d['type'] == 'rotn':
+    ss = ss + '_rotn_' + str(d['layers']) + 'layers'
     if d['layers'] == 2:
         net = twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
         ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel"

@@ -82,7 +82,6 @@ class NewNPTN(nn.Module):
         # From every "template" derive G "transformed templates" by applying rotation:
         # Variable(torch.randn(8,4,3,3))
         # Step 1 – Create the G transformation matrices we whish to rotate each "template" by:
-        # TODO: Copy from Cat
         #g = get_rotated_kernels(w, self.G, -alpha, alpha) #Variable(torch.randn(G,2,3)) # size(g) = ( G x 2 x 3 ) # TODO
 
         #g = Variable(torch.randn(G,2,3)) # size(g) = ( G x 2 x 3 ) # TODO
@@ -94,8 +93,8 @@ class NewNPTN(nn.Module):
         # Step2 – Apply the transformations:
         # Step 2.1 – Create the flow fields, describing the transformations.
         s = torch.Size((G, M*N, k, k)) # Desired output size
-        self.flow_field  = torch.nn.functional.affine_grid(g, s) # size(flow_field) = (G, k, k, 2), one translation vector (or maybe coordinate; we don't know nor care) per each of the G rotation matrices.
-        
+        flow_field  = torch.nn.functional.affine_grid(g, s) # size(flow_field) = (G, k, k, 2), one translation vector (or maybe coordinate; we don't know nor care) per each of the G rotation matrices.
+        self.register_buffer("flow_field", flow_field)
         
         # Those two layers are the same as in the vanilla NPTN by ??? et.al. 20??
         self.maxpool3d = nn.MaxPool3d((self.G, 1, 1)) 
@@ -194,7 +193,7 @@ class TestNet(nn.Module):
 
 #####  small run to see if weights are updated  #####
 
-use_cuda = False
+use_cuda = True
 plot = True
 
 # load MNIST data and rotate it
@@ -297,6 +296,6 @@ for epoch in range(num_epochs):  # loop over the dataset multiple times
 
     training_epoch(epoch)
     
-end_w = net.rotPTN.rotConv.w
+end_w = net.newNet.w
 
 
