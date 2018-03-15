@@ -16,13 +16,15 @@ out_conv = F.conv2d(inputs, filters, padding=1)
 # http://pytorch.org/docs/0.3.1/nn.html?#torch.nn.MaxPool3d
 
 ################################################
-
+# %%
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
+from rot_conv_try import get_rotated_kernels
+
 
 def make_permutation(M,N):
     nums = [i for i in range(M*N)]
@@ -31,11 +33,27 @@ def make_permutation(M,N):
     NUMS = NUMS.T
     return NUMS.flatten()
 
+# DEV_VALUES__
 M = 3 # M: number of input channeles
 N = 2 # N: number of output channels
 G = 5 # G: number of translations to use.
-alpaha = 5
+alpha = 5
 k = 3 # filtersize
+inputs = Variable(torch.randn(G,2,3)) # size(g) = ( G x 2 x 3 ) # TODO
+#__DEV_VALUES
+
+def make_rotation_matrix(rot_deg):
+    rot_rad = np.radians(rot_deg)
+    c = np.cos(rot_rad)
+    s = np.sin(rot_rad)
+    mat = np.array([[c,-s,0],[s,c,0]])
+    return mat
+
+def make_rotation_batch(rot_deg, batch_size):
+    return np.array([make_rotation_matrix(rot_deg) for i in range(batch_size)])
+
+def make_rotations(rot_deg_min, rot_deg_max, num_rots):
+    return np.array([make_rotation_matrix(rot_deg) for rot_deg in np.linspace(rot_deg_min, rot_deg_max, num_rots)])
 
 class NewNPTN(nn.Module):
     def __init__(self, M, N, G, alpha, filtersize = 5, padding=0):
@@ -63,32 +81,28 @@ class NewNPTN(nn.Module):
         # Create the "templates" as torch.nn.Parameter as described here:
         # http://pytorch.org/tutorials/advanced/numpy_extensions_tutorial.html
         # http://pytorch.org/docs/0.3.1/nn.html#parameters
-        # Rondomly initialize weigts: # TODO: Maybe there is a better way to initialize
-        w = Parameter(torch.randn(M*N, k, k))  # size(w) = ( M*N x k x k )
+
+        # Rondomly initialize weights: # TODO: Maybe there is a better way to initialize
+        # maybe: #w = Parameter(torch.randn(M*N, k, k))  # size(w) = ( M*N x k x k )
+
+       
+        self.w = Parameter(torch.randn(M*N, k, k))  # size(w) = ( M*N x k x k )
+
         
         # From every "template" derive G "transformed templates" by applying rotation:
         # Variable(torch.randn(8,4,3,3))
         # Step 1 – Create the G transformation matrices we whish to rotate each "template" by:
         # TODO: Copy from Cat
-        g = Variable(torch.randn(G,2,3)) # size(g) = ( G x 2 x 3 ) # TODO
+        #g = get_rotated_kernels(w, self.G, -alpha, alpha) #Variable(torch.randn(G,2,3)) # size(g) = ( G x 2 x 3 ) # TODO
+
+        # g = Variable(torch.randn(G,2,3)) # size(g) = ( G x 2 x 3 ) # TODO
+        g = Variable( torch.Tensor( make_rotations(-alpha, alpha, G) ) ) # size(g) = ( G x 2 x 3 )
+
         
         # Step2 – Apply the transformations:
         # Step 2.1 – Create the flow fields, describing the transformations.
         s = torch.Size((G, M*N, k, k)) # Desired output size
-        flow_field  = torch.nn.functional.affine_grid(g, s) # size(flow_field) = (G, k, k, 2), one translation vector (or maybe coordinate; we don't know nor care) per each of the G rotation matrices.
-        
-        # Step 2.2 – Apply the flow_fields. Each flow_field will be applied to each channle of the input / each "template".
-        # Each flow_field is of (G x M*N, k, k)
-        #a grid. For each rotation, there will be one flow field.
-        # Repeat w along the first dimension:
-        w_rep = w.unsqueeze(0) # Add an empty first dimension. size(w_rep) = ( 1 x M*N, k, k)
-        w_rep = w_rep.expand(G, -1, -1, -1) # Repeat along the singular first dimension G times. size(w_rep) = ( G x M*N, k, k)
-              
-        # Convolution:
-        # Use the functional (torch.nn.functional.conv2d) instead of Module
-        # (torch.nn.conv2d), becuse we don't want trainable parameters exept the
-        # template vector defined above:
-        out_conv = F.conv2d(inputs, filters, padding=1)    
+        self.flow_field  = torch.nn.functional.affine_grid(g, s) # size(flow_field) = (G, k, k, 2), one translation vector (or maybe coordinate; we don't know nor care) per each of the G rotation matrices.
         
         
         # Those two layers are the same as in the vanilla NPTN by ??? et.al. 20??
@@ -98,13 +112,35 @@ class NewNPTN(nn.Module):
         self.permutation = make_permutation(self.M, self.N)
 
     def forward(self, x):
+        # Start from w ervery time and create the others as rotation of it
+        
         #print('\nShape of x ', x.size())
+       
+        # Step 2.2 – Apply the flow_fields. Each flow_field will be applied to each channle of the input / each "template".
+        # Each flow_field is of (G x M*N, k, k)
+        #a grid. For each rotation, there will be one flow field.
+        # Repeat w along the first dimension:
+        w_rep = self.w.unsqueeze(0) # Add an empty first dimension. size(w_rep) = ( 1 x M*N, k, k)
+        w_rep2 = w_rep.expand(G, -1, -1, -1) # Repeat along the singular first dimension G times.
+        #                                    # size(w_rep2) = ( G x M*N, k, k)
+        # 
+        w_rot = torch.nn.functional.grid_sample(w_rep2, self.flow_field) # size(w_rep2) = ( G x M*N x k x k )
+        
+        # Go from ( G x M*N x k x k ) to ( M*N x G x k x k ),
+        #     i.e.( angle, template, x, y) to ( template, angle, x, y)
+        w_perm = w_rot.permute(1,0,2,3)
+        
+        # But actually we need this unrolled:
+        MNG = self.M * self.N * self.G
+        
+        w_unrolled = w_perm.resize(MNG, self.k, self.k) # size(w_unrolled) = ( M*N*G x k x k )
+        
+        # Convolution:
+        # Use the functional (torch.nn.functional.conv2d) instead of Module
+        # (torch.nn.conv2d), becuse we don't want trainable parameters exept the
+        # template vector defined above:
+        x = F.conv2d(x, w_unrolled, groups=self.M)  # TODO: Add padding?        
                 
-        # The Tutorial on "Spatial transformer networks" has code showing the
-        # usage of affine_grid and grid_sample modules.
-        # http://pytorch.org/tutorials/intermediate/spatial_transformer_tutorial.html#depicting-spatial-transformer-networks
-        # http://pytorch.org/docs/0.3.1/nn.html?highlight=affine%20grid#torch.nn.functional.affine_grid
-        x = self.conv1(x)
         #print('Shape after convolution', x.size())
         x = self.maxpool3d(x)
         #print("Shape after MaxPool3d: ", x.size()) # dimension should be M*N
@@ -116,9 +152,9 @@ class NewNPTN(nn.Module):
         #print('Shape after Mean Pooling: ', x.size())
         return x
     
-net = NewNPTN(M, N, G, alpha = alpha, filtersize = filtersize, padding=0)
+net = NewNPTN(M, N, G, alpha = alpha, filtersize = k, padding=0)
 
-
+# %%
 ################################################
 M = 3
 N = 2
