@@ -37,6 +37,8 @@ def make_rotations(rot_deg_min, rot_deg_max, num_rots):
 
 def rotate(rot_mat, img):
     flow_field = affine_grid(torch.Tensor(rot_mat), img.size())
+    #if use_cuda:
+    #    flow_field = flow_field.cuda()
     return grid_sample(img, flow_field)
 
 
@@ -60,7 +62,7 @@ def get_rotated_kernels(kernels, G, rot_min, rot_max):
 
 # rotates kernel and convolves images with kernels    
 # number of kernels passed == number of channels leaving
-    
+'''    
 def rotConv(imgs, kernels, M=3, G=4, rot_min=-90,  rot_max=90, plot=False):
     rot_k = get_rotated_kernels(kernels, G, rot_max, rot_min)   
     convoluted_imgs = F.conv2d(Variable(imgs), rot_k, groups=M)
@@ -69,11 +71,14 @@ def rotConv(imgs, kernels, M=3, G=4, rot_min=-90,  rot_max=90, plot=False):
         plot_kernels(rot_k.data.numpy(), num_cols=G)
         plot_kernels(convoluted_imgs.data.numpy(), num_cols=G)
     return convoluted_imgs
-
+'''
 
 def make_rotConv(kernels, M=3, G=4, rot_min=-90,  rot_max=90, plot=False):      
     def rotConv(imgs):
         rot_k = get_rotated_kernels(kernels, G, rot_max, rot_min)   
+        #if use_cuda:
+        #    print('moving to GPU')
+        #   rot_k = rot_k.cuda()
         convoluted_imgs = F.conv2d(imgs, rot_k, groups=M)
         
         if plot == all:
@@ -94,7 +99,11 @@ class rotConvLayer(nn.Module):
         self.plot = plot
         self.k = filtersize
         
+        #if use_cuda:
+        #    self.w = Parameter(torch.randn(M*N, 1, self.k, self.k).cuda())
+        #else:
         self.w = Parameter(torch.randn(M*N, 1, self.k, self.k))
+            
         self.rotConv = make_rotConv(self.w, M=M, G=G, rot_min=rot_min, rot_max=rot_max, plot=plot)
 
 
@@ -158,14 +167,14 @@ class rotNet(nn.Module):
         
         # first layer 
         self.rotPTN = rotPTN(input_channel, n1, G, filtersize, rot_min=-90, rot_max=90, padding=padding, plot=plot)
-        #self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
+        self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
         self.pool = nn.MaxPool2d(2)
         self.prelu = nn.PReLU()
         # second layer
-        #self.conv2 = nn.Conv2d(n1, n2, filtersize, padding=padding)
-        #self.batchnorm2 = nn.BatchNorm2d(n2) 
-        #self.prelu2 = nn.PReLU()
-        #self.pool2 = nn.MaxPool2d(2)
+        self.rotPTN2 = rotPTN(n1, n2, G, filtersize, rot_min=-90, rot_max=90, padding=padding, plot=plot)
+        self.batchnorm2 = nn.BatchNorm2d(n2) 
+        self.prelu2 = nn.PReLU()
+        self.pool2 = nn.MaxPool2d(2)
         
         n = self.num_flat_features(self.input_size)
         
@@ -182,15 +191,15 @@ class rotNet(nn.Module):
     def features(self, x):
         # first layer
         x = self.rotPTN(x)
-        # x = self.batchnorm(x)
+        x = self.batchnorm(x)
         #print('rotPTN ', x.size())
         x = self.pool(self.prelu(x))
         #print('shape first layer ', x.size())
         
         # second layer
-        #x = self.batchnorm2(self.conv2(x))
+        x = self.batchnorm2(self.rotPTN2(x))
         #print('after batchnorm 2 ', x.size())
-        #x = self.pool2(self.prelu2(x))
+        x = self.pool2(self.prelu2(x))
         #print('shape second layer ', x.size())
         return x
     
@@ -204,7 +213,8 @@ class rotNet(nn.Module):
     
 #####  small run to see if weights are updated  #####
 
-use_cuda = False
+use_cuda = True
+plot = False
 
 # load MNIST data and rotate it
 max_rotation = 0
@@ -228,11 +238,16 @@ testloader = torch.utils.data.DataLoader(
 
 
 
-net = rotNet(1,2,4,5, plot=False)   
-init_w = net.rotPTN.rotConv.w
-print(net.rotPTN.rotConv.w)   
-plot_kernels(net.rotPTN.rotConv.w, title='initialization')
+net = rotNet(input_channel=1, n1=3, n2=4, plot=False)   
 
+if use_cuda:
+    net = net.cuda()
+#init_w = net.rotPTN.rotConv.w.detach() # does not work since copy is not possible
+print(net.rotPTN.rotConv.w)   
+
+if plot:
+    plot_kernels(net.rotPTN.rotConv.w, title='initialization, layer 1')
+    plot_kernels(net.rotPTN2.rotConv.w, title='initialization, layer 2')
 criterion = nn.NLLLoss() 
 optimizer = optim.SGD(net.parameters(), lr=0.05)
 
@@ -272,7 +287,7 @@ def training_epoch(epoch):
         if i % 250 == 249:
             stat_epoch = epoch + 1
             stat_batch = i + 1
-            stat_loss = running_loss / 25
+            stat_loss = running_loss / 250
             print('[%d, %5d] loss: %.3f' %
                   (stat_epoch, stat_batch, stat_loss))
           
@@ -283,7 +298,9 @@ def training_epoch(epoch):
     print('----------------------------------------------')
     print('Epoch ', epoch) 
     print('Accuracy of the network on the train images: %d %%' % accuracy)
-    plot_kernels(net.rotPTN.rotConv.w)
+    if plot:
+        plot_kernels(net.rotPTN.rotConv.w, title='layer 1')
+        plot_kernels(net.rotPTN2.rotConv.w, title='layer 2')
 
 num_epochs = 3 # paper: 300
 for epoch in range(num_epochs):  # loop over the dataset multiple times

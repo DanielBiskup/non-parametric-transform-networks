@@ -71,7 +71,8 @@ def plot_kernels(tensor, num_cols=6, title=''): # plots all kernels (can take a 
         plt.subplots_adjust(wspace=0.1, hspace=0.1)
         plt.show()
     except:
-        tensor = tensor.data.numpy()
+        tensor = tensor.copy()
+        tensor = tensor.cpu().data.numpy()
         if not tensor.ndim==4:
             raise Exception("assumes a 4D tensor")
         #if not tensor.shape[-1]==3:
