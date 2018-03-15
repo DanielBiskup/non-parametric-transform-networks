@@ -34,3 +34,14 @@ def cnn_118(n2=89, n3=16):
 
 def NPTN_48_5(n2=48, n3=16):
     return 3*48*5 + 48*5*n2 + n2*n3
+
+
+print(cnn_paras(48,89,16)) #5840
+
+print(nptn_paras(48,89,16,1))
+print(nptn_paras(48,40,16,2)) # 5408
+print(nptn_paras(32,48,24,2)) #5568
+print(nptn_paras(32,32,24,3)) #5664
+print(nptn_paras(24,32,16,4)) # 5408
+print(nptn_paras(32,24,24,4)) #5760
+print(nptn_paras(16,32,16,4))
