@@ -86,8 +86,8 @@ net_3_CNN = threeLayeredCNN()
 #####      plot some filters from loaded network        ##########
 
 
-nptn_net = torch.load('2018_03_12_13_49_53_NEWAccTEST_MNIST_rot_90_yaml.model')
-example_plots_nptn(nptn_net, layer=1, num_samples=10)
+#nptn_net = torch.load('2018_03_12_13_49_53_NEWAccTEST_MNIST_rot_90_yaml.model')
+#example_plots_nptn(nptn_net, layer=1, num_samples=10)
 
 
 ########   playground rotating kernels and passing them to a convolution    #########
@@ -121,20 +121,20 @@ whatever = grid_sample(images, flow_field)
 show_cifar(whatever.data)
 
 # for kernels
-net = torch.load('2018_03_12_13_49_53_NEWAccTEST_MNIST_rot_90_yaml.model')
-cnn_net = torch.load( '2018_03_09_11_35_25_mnist_1M_cnn_2layers36N1_16N2_5Kernel.final_model')
-t = net.nptn2.conv1.weight.data.cpu()
-kernel3d = cnn_net.conv2.weight[:1,:3].cpu()
+#net = torch.load('2018_03_12_13_49_53_NEWAccTEST_MNIST_rot_90_yaml.model')
+#cnn_net = torch.load( '2018_03_09_11_35_25_mnist_1M_cnn_2layers36N1_16N2_5Kernel.final_model')
+#t = net.nptn2.conv1.weight.data.cpu()
+#kernel3d = cnn_net.conv2.weight[:1,:3].cpu()
 
 # duplicate kernel
-print(t.shape)
-print(kernel3d.shape)
-plot_kernels(t.numpy())
+#print(t.shape)
+#print(kernel3d.shape)
+#plot_kernels(t.numpy())
 
-flow_field2 = affine_grid(torch.Tensor(make_rotation_batch(45,1)), t.size())
-whatever2 = grid_sample(t, flow_field2)
+#flow_field2 = affine_grid(torch.Tensor(make_rotation_batch(45,1)), t.size())
+#whatever2 = grid_sample(t, flow_field2)
 
-plot_kernels(whatever2.data.numpy())
+#plot_kernels(whatever2.data.numpy())
 
 
 ####   make nice example kernel    ########
@@ -250,7 +250,7 @@ plot_kernels(r_k_m.data.numpy(), num_cols=5)
 r_k_m = torch.transpose(r_k_m, 0,1)
 plot_kernels(r_k_m.data.numpy(), num_cols=5)
 #print(rotated_kernels_more.shape)
-r_k_m_flat = r_k_m.contiguous().view(g*N,1,5,5)
+r_k_m_flat = r_k_m.contiguous().view(g*M*N,1,5,5)
 
 plot_kernels(r_k_m_flat.data.numpy(), num_cols=5)
 print(r_k_m_flat.shape)

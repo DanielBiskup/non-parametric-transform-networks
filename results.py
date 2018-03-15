@@ -9,14 +9,15 @@ Results for NPTN Experiments
 import numpy as np
 import matplotlib.pyplot as plt
 
-print('Experiments with two-layered batch-normalized CNNs vs NPTNs')
+
+print(' ### Experiments with two-layered batch-normalized CNNs vs NPTNs ### ')
 print('kernelsize = 5m after 300 epochs of training')
 print('NLLL loss')
 
 
 NPTN_paras = [(48,1), (24,2), (16,3)]
 NPTN_losses = [0.9322558387160301,0.9056078843712807,0.9312066503047943]
-NPTN_accs = [67,68,67]
+NPTN_accs = [67.63,68.97,67.55]
 
 x = [1,2,3]
 plt.plot(x, NPTN_losses, marker='p', label='NPTN')
@@ -35,7 +36,9 @@ plt.ylabel('Accuracy')
 plt.legend()
 plt.show()
 
+print('Possible issues: difference train test loss?, no train acc reported')
 
+print('\n\n ############################################################# \n\n')
 
 print('Rotation Experiments on MNIST')
 print('Kernelsize=5, Rotation=60?')
@@ -49,6 +52,33 @@ print('CNN(36) Accuracy 94% Loss = 0.1816810576915741')
 print('Rotation Experiments on MNIST without horizontal flipping')
 print('NPTN(18,2): Test NLLLoss =  0.0738690174460411, Acc 97 %' )
 print('CNN(36): Test NLLLoss =  0.07362796711921692, 97 %')
+
+print('more values should be on lab computer')
+
+
+print('ISSUES: Higher test acc/ lower test loss')
+
+print('\n\n ############################################################# \n\n')
+      
+print('Three layered experiments')
+
+
+
+print('\n\n ############################################################# \n\n')
+      
+print('Rot Net experiments')
+
+
+
+
+
+
+
+
+
+
+
+
 
 # is MNIST 28*28?!
 # what you mean no rotation for test set?

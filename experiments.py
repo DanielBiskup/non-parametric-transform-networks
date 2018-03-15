@@ -29,7 +29,7 @@ from network import twoLayeredNPTN
 from network import threeLayeredNPTN
 from network import twoLayeredCNN
 from network import threeLayeredCNN
-from rot_conv_try import rotNet
+from newNet import twoLayeredROTNET
 
 '''
 parser = argparse.ArgumentParser(description='Experiment')
@@ -110,6 +110,18 @@ elif d['type'] == 'cnn':
         net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
         ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
         
+elif d['type'] == 'rotNet':
+    ss = ss + '_rotNet_' + str(d['layers']) + 'layers'
+    if d['layers'] == 2:
+        net = twoLayeredROTNET(d['filtersize'], M=M, N1=d['n1'], N2=d['n2'], alpha=d['alpha'])
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel" + '_kernelRot_' + str(d['rotmin']) + '_' + str(d['rotmax'])
+    elif d['layers'] == 3: # TODO?
+        net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
+                
+        
+        
+        
 if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
 
@@ -117,6 +129,9 @@ if args.name == 'yaml':
     ss = str(timestamp) + '_LIGHT_' + args.config.replace('.','_')
     
 spec_string = ss
+
+
+
 
 ###########   loading and preprocessing the data    ############
 
@@ -132,7 +147,10 @@ _yes = input('press enter to continue: ')
 
 
 ### Training Data Transforms
-transform_train_list = [transforms.RandomHorizontalFlip()]
+if d['dataset'] == 'cifar10':
+    transform_train_list = [transforms.RandomHorizontalFlip()]
+else:
+    transform_train_list = []
     
 # Train:Translation
 if is_set(d,'translation_train'):
@@ -160,8 +178,10 @@ transform_train = transforms.Compose( transform_train_list )
 print(transform_train)
 
 ### Test Data Transforms
-transform_test_list = [transforms.RandomHorizontalFlip()]
-
+if d['dataset'] == 'cifar10':
+    transform_test_list = [transforms.RandomHorizontalFlip()]
+else:
+    transform_test_list = []
 # Don't use translation or rotation during test
 if is_set(d,'rotation_test'):
     rotation_test = d['rotation_test']
