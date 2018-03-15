@@ -24,41 +24,12 @@ from torch.nn.parameter import Parameter
 from network import make_permutation
 import torch.optim as optim
 
-
-def make_rotation_matrix(rot_deg):
-    rot_rad = np.radians(rot_deg)
-    c = np.cos(rot_rad)
-    s = np.sin(rot_rad)
-    mat = np.array([[c,-s,0],[s,c,0]])
-    return mat
-
-def make_rotations(rot_deg_min, rot_deg_max, num_rots):
-    return np.array([make_rotation_matrix(rot_deg) for rot_deg in np.linspace(rot_deg_min, rot_deg_max, num_rots)])
-
-def rotate(rot_mat, img):
-    flow_field = affine_grid(torch.Tensor(rot_mat), img.size())
-    #if use_cuda:
-    #    flow_field = flow_field.cuda()
-    return grid_sample(img, flow_field)
+#DEV__
+def cudacheck(x):
+    print(str(type(x)) + ' is_cuda = ' + str(x.is_cuda))
+#__DEV
 
 
-def get_rotated_kernels(kernels, G, rot_min, rot_max):
-    num_kernels = kernels.shape[0]
-    kernel_size = kernels.shape[-1]
-    
-    # make rotation matrices
-    rot_mats = torch.Tensor(make_rotations(rot_min,rot_max,G))
-    
-    # rotate kernels
-    kernelsPM = kernels.permute(1,0,2,3) # from (N,1,ks,ks) to (1,N,ks,ks)
-    rot_kernelsPM = torch.cat([rotate(torch.unsqueeze(rotation,0), kernelsPM) for rotation in rot_mats])
-    
-    # sort kernels in appropiate order
-    rot_kernels = rot_kernelsPM.view(G, num_kernels, kernel_size, kernel_size)
-    rot_kernels = torch.transpose(rot_kernels, 0, 1)
-    rot_kernels = rot_kernels.contiguous().view(G*num_kernels, 1, kernel_size, kernel_size)
-    
-    return rot_kernels
 
 # rotates kernel and convolves images with kernels    
 # number of kernels passed == number of channels leaving
@@ -72,20 +43,7 @@ def rotConv(imgs, kernels, M=3, G=4, rot_min=-90,  rot_max=90, plot=False):
         plot_kernels(convoluted_imgs.data.numpy(), num_cols=G)
     return convoluted_imgs
 '''
-
-def make_rotConv(kernels, M=3, G=4, rot_min=-90,  rot_max=90, plot=False):      
-    def rotConv(imgs):
-        rot_k = get_rotated_kernels(kernels, G, rot_max, rot_min)   
-        #if use_cuda:
-        #    print('moving to GPU')
-        #   rot_k = rot_k.cuda()
-        convoluted_imgs = F.conv2d(imgs, rot_k, groups=M)
-        
-        if plot == all:
-            plot_kernels(rot_k.data.numpy(), num_cols=G)
-            plot_kernels(convoluted_imgs.data.numpy(), num_cols=G)
-        return convoluted_imgs
-    return rotConv
+   
 #conv_imgs = rotconv(images_mnist[:4], kernels=k, M=1, G=5, plot=True)
   
 class rotConvLayer(nn.Module):
@@ -98,23 +56,90 @@ class rotConvLayer(nn.Module):
         self.rot_max = rot_max
         self.plot = plot
         self.k = filtersize
+    
+        # make rotation matrices, which are disposable after call to __init__
+        rot_mats = torch.Tensor(self.make_rotations())
+        print('shape rot_mats', rot_mats.shape)
+        #rot_mats = rot_mats.unsqueeze(self.rot_mats ,0)
+        #flow_fields = torch.cat([affine_grid(torch.unsqueeze(rot_mat,0), torch.Size([1, M, self.k, self.k])) for rot_mat in rot_mats ])
+        flow_fields = [affine_grid(torch.unsqueeze(rot_mat,0), torch.Size([1, M, self.k, self.k])) for rot_mat in rot_mats ]
+        flow_fields = torch.cat(flow_fields,0)
+        #flow_fields = np.array(flow_fields)
+        print('flow_fiels shape', flow_fields.shape, 'ende')
+        #flow_fields = torch.from_numpy(flow_fields)
+        self.register_buffer('flow_fields', flow_fields) 
         
         #if use_cuda:
         #    self.w = Parameter(torch.randn(M*N, 1, self.k, self.k).cuda())
         #else:
         self.w = Parameter(torch.randn(M*N, 1, self.k, self.k))
-            
-        self.rotConv = make_rotConv(self.w, M=M, G=G, rot_min=rot_min, rot_max=rot_max, plot=plot)
-
+        print('w in init(): ')
+        cudacheck(self.w)    
+       # self.rotConv = make_rotConv(self.w, M=M, G=G, rot_min=rot_min, rot_max=rot_max, plot=plot)
 
     def forward(self, x):
         #print('\nShape of x ', x.size())
         x = self.rotConv(x)
         if self.plot:
             plot_kernels(self.w)
-        
+       
         return x
+
+    def rotConv(self, imgs):
+        print('w in rotConv(): ')
+        cudacheck(self.w)  
+        rot_k = self.get_rotated_kernels(self.w, self.G, self.rot_max, self.rot_min)   
+        #if use_cuda:
+        #    print('moving to GPU')
+        #   rot_k = rot_k.cuda()
+        convoluted_imgs = F.conv2d( imgs, rot_k, groups=self.M )
+        
+        if self.plot == all:
+            plot_kernels(rot_k.data.numpy(), num_cols=self.G)
+            plot_kernels(convoluted_imgs.data.numpy(), num_cols=self.G)
+        return convoluted_imgs
     
+    def make_rotation_matrix(self,rot_deg):
+        rot_rad = np.radians(rot_deg)
+        c = np.cos(rot_rad)
+        s = np.sin(rot_rad)
+        mat = np.array([[c,-s,0],[s,c,0]])
+        return mat
+
+    def make_rotations(self):
+        return np.array([self.make_rotation_matrix(rot_deg) for rot_deg in np.linspace(self.rot_min, self.rot_max, self.G)])
+    
+    def get_rotated_kernels(self, kernels, G, rot_min, rot_max):
+        def rotate(flow_field, img):
+            
+            #print(type(flow_field))
+            #if use_cuda:
+            #    flow_field = flow_field.cuda()
+            
+            #DEV__ #TODO
+            print('----------------------------------------------------------------')
+            print('-----------Input to GridSampler.apply(input, grid, padding_mode)')
+            print('----------------------------------------------------------------')
+            cudacheck(img)        # is the 'input' to GridSampler.apply()
+            cudacheck(flow_field) # is the 'grid'  to GridSampler.apply()
+            #__DEV
+            return grid_sample(img, flow_field)
+        
+        num_kernels = kernels.shape[0]
+        kernel_size = kernels.shape[-1]
+        
+        # rotate kernels
+        kernelsPM = kernels.permute(1,0,2,3) # from (N,1,ks,ks) to (1,N,ks,ks)
+        ff_list = [ flow_field for flow_field in self.flow_fields]
+        print(ff_list)
+        rot_kernelsPM = torch.cat([rotate(flow_field, kernelsPM) for flow_field in ff_list])
+        
+        # sort kernels in appropiate order
+        rot_kernels = rot_kernelsPM.view(G, num_kernels, kernel_size, kernel_size)
+        rot_kernels = torch.transpose(rot_kernels, 0, 1)
+        rot_kernels = rot_kernels.contiguous().view(G*num_kernels, 1, kernel_size, kernel_size)
+        
+        return rot_kernels
 
 class rotPTN(nn.Module):
     def __init__(self, M, N, G, filtersize, rot_min=-90, rot_max=90, padding=0, plot=False):
@@ -131,6 +156,8 @@ class rotPTN(nn.Module):
 
     def forward(self, x):
         #print('\nShape of x ', x.size())
+        
+        
         x = self.rotConv(x)
         #print('Shape after rot convolution', x.size())
         x = self.maxpool3d(x)
@@ -241,9 +268,9 @@ testloader = torch.utils.data.DataLoader(
 net = rotNet(input_channel=1, n1=3, n2=4, plot=False)   
 
 if use_cuda:
-    net = net.cuda()
+    net.cuda()
 #init_w = net.rotPTN.rotConv.w.detach() # does not work since copy is not possible
-print(net.rotPTN.rotConv.w)   
+#print(net.rotPTN.rotConv.w)   
 
 if plot:
     plot_kernels(net.rotPTN.rotConv.w, title='initialization, layer 1')
