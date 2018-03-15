@@ -48,27 +48,50 @@ def show_cifar(img):
     
     
 # for showing filters
-def plot_kernels(tensor, num_cols=6): # plots all kernels (can take a while)
-    if not tensor.ndim==4:
-        raise Exception("assumes a 4D tensor")
-    #if not tensor.shape[-1]==3:
-    #    raise Exception("last dim needs to be 3 to plot")
-    #num_cols = tensor.shape[1]
-    num_kernels = tensor.shape[0] * tensor.shape[1]
-    num_rows = 1+ num_kernels // num_cols
-    fig = plt.figure(figsize=(num_cols,num_rows))
-    counter = 0
-    for i in range(tensor.shape[0]):
-        for j in range(tensor.shape[1]):        
-            ax1 = fig.add_subplot(num_rows,num_cols,counter+1)
-            ax1.imshow(tensor[i][j])
-            ax1.axis('off')
-            ax1.set_xticklabels([])
-            ax1.set_yticklabels([])
-            counter += 1
-    plt.subplots_adjust(wspace=0.1, hspace=0.1)
-    plt.show()
+def plot_kernels(tensor, num_cols=6, title=''): # plots all kernels (can take a while)
     
+    try:
+        if not tensor.ndim==4:
+            raise Exception("assumes a 4D tensor")
+        #if not tensor.shape[-1]==3:
+        #    raise Exception("last dim needs to be 3 to plot")
+        #num_cols = tensor.shape[1]
+        num_kernels = tensor.shape[0] * tensor.shape[1]
+        num_rows = 1+ num_kernels // num_cols
+        fig = plt.figure(figsize=(num_cols,num_rows))
+        counter = 0
+        for i in range(tensor.shape[0]):
+            for j in range(tensor.shape[1]):        
+                ax1 = fig.add_subplot(num_rows,num_cols,counter+1)
+                ax1.imshow(tensor[i][j])
+                ax1.axis('off')
+                ax1.set_xticklabels([])
+                ax1.set_yticklabels([])
+                counter += 1
+        plt.subplots_adjust(wspace=0.1, hspace=0.1)
+        plt.show()
+    except:
+        tensor = tensor.data.numpy()
+        if not tensor.ndim==4:
+            raise Exception("assumes a 4D tensor")
+        #if not tensor.shape[-1]==3:
+        #    raise Exception("last dim needs to be 3 to plot")
+        #num_cols = tensor.shape[1]
+        num_kernels = tensor.shape[0] * tensor.shape[1]
+        num_rows = 1+ num_kernels // num_cols
+        fig = plt.figure(figsize=(num_cols,num_rows))
+        counter = 0
+        for i in range(tensor.shape[0]):
+            for j in range(tensor.shape[1]):        
+                ax1 = fig.add_subplot(num_rows,num_cols,counter+1)
+                ax1.imshow(tensor[i][j])
+                ax1.axis('off')
+                ax1.set_xticklabels([])
+                ax1.set_yticklabels([])
+                counter += 1
+        plt.subplots_adjust(wspace=0.1, hspace=0.1)
+        plt.title(title)
+        plt.show()
 
 #plot a few kernels from a model
 def example_plots_cnn(net, layer=2, num_samples=5):

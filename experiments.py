@@ -29,6 +29,7 @@ from network import twoLayeredNPTN
 from network import threeLayeredNPTN
 from network import twoLayeredCNN
 from network import threeLayeredCNN
+from rot_conv_try import rotNet
 
 '''
 parser = argparse.ArgumentParser(description='Experiment')

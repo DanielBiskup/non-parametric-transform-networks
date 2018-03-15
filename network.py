@@ -293,59 +293,18 @@ class threeLayeredCNN(nn.Module):
         x = F.log_softmax(self.fc1(x), dim=1)
         return x
 
-    
-class rotNet(nn.Module):
-    def __init__(self, filtersize=5, G=4 , n1=9, n2=16, input_channel=3):
-        super(rotNet, self).__init__()
 
-        if input_channel==3: # CIFAR
-            self.input_size=(3,32,32)
-        else:
-            self.input_size=(1,28,28)
-        #self.n3 = n3
-        padding = int(filtersize/2) # do or don't ?
-        
-        # first layer 
-        self.conv1 = nn.Conv2d(input_channel, n1, filtersize, padding=padding)
-        self.batchnorm = nn.BatchNorm2d(n1)   # is 2d the right one?
-        self.pool = nn.MaxPool2d(2)
-        self.prelu = nn.PReLU()
-        # second layer
-        self.conv2 = nn.Conv2d(n1, n2, filtersize, padding=padding)
-        self.batchnorm2 = nn.BatchNorm2d(n2) 
-        self.prelu2 = nn.PReLU()
-        self.pool2 = nn.MaxPool2d(2)
-        
-        n = self.num_flat_features(self.input_size)
-        
-        self.fc1 = nn.Linear(n, 10)
-        
-    def features(self, x):
-        # first layer
-        #x = self.batchnorm(self.conv1(x))
-        #print('batchnorm ', x.size())
-        x = self.pool(self.prelu(x))
-        #print('shape first layer ', x.size())
-        
-        # second layer
-        x = self.batchnorm2(self.conv2(x))
-        #print('after batchnorm 2 ', x.size())
-        x = self.pool2(self.prelu2(x))
-        #print('shape second layer ', x.size())
-        return x
-    
-    def forward(self, x):
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
-        x = F.log_softmax(self.fc1(x), dim=1)
-        return x
+
+
+
+
 
 # show images
 # imshow(torchvision.utils.make_grid(images))
 # print labels
 
-print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
-'''
+#print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
+
 
 
 # print(' '.join('%5s' % classes[labels[j]] for j in range(4)))

@@ -23,6 +23,8 @@ import torch.nn.functional as F
 import torch
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
+from rot_conv_try import get_rotated_kernels
+
 
 def make_permutation(M,N):
     nums = [i for i in range(M*N)]
@@ -63,14 +65,14 @@ class NewNPTN(nn.Module):
         # Create the "templates" as torch.nn.Parameter as described here:
         # http://pytorch.org/tutorials/advanced/numpy_extensions_tutorial.html
         # http://pytorch.org/docs/0.3.1/nn.html#parameters
-        # Rondomly initialize weigts: # TODO: Maybe there is a better way to initialize
+        # Rondomly initialize weights: # TODO: Maybe there is a better way to initialize
         w = Parameter(torch.randn(M*N, k, k))  # size(w) = ( M*N x k x k )
         
         # From every "template" derive G "transformed templates" by applying rotation:
         # Variable(torch.randn(8,4,3,3))
         # Step 1 – Create the G transformation matrices we whish to rotate each "template" by:
         # TODO: Copy from Cat
-        g = Variable(torch.randn(G,2,3)) # size(g) = ( G x 2 x 3 ) # TODO
+        g = get_rotated_kernels(w, self.G, -alpha, alpha) #Variable(torch.randn(G,2,3)) # size(g) = ( G x 2 x 3 ) # TODO
         
         # Step2 – Apply the transformations:
         # Step 2.1 – Create the flow fields, describing the transformations.
