@@ -31,6 +31,8 @@ from network import twoLayeredCNN
 from network import threeLayeredCNN
 from newNet import twoLayeredROTNET
 
+DEV = False # if true, use the dev output folder.
+
 '''
 parser = argparse.ArgumentParser(description='Experiment')
 parser.add_argument('-n', '--network_type', default = none, type=str, help='choose \'nptn\' or \'cnn\'')
@@ -52,7 +54,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "rotNet_12_3_MNIST_rot_-60_60_rot_60.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "rotNet_12_3_MNIST_rot_-60_60_rot_30_only_training.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 parser.add_argument('-n', '--name', default = "yaml", type=str, help='yaml: Will use the yaml file name for folder and file names. n will use number of layers as file name')
@@ -111,16 +113,7 @@ elif d['type'] == 'cnn':
         net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
         ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
 
-#ROTN #NPRN Non-Parametric Rotation Network      #TODO   
-elif d['type'] == 'rotn':
-    ss = ss + '_rotn_' + str(d['layers']) + 'layers'
-    if d['layers'] == 2:
-        net = twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
-        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel"
-    elif d['layers'] == 3:
-        net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
-        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
-        
+#ROTNET
 elif d['type'] == 'rotNet':
     ss = ss + '_rotNet_' + str(d['layers']) + 'layers'
     if d['layers'] == 2:
@@ -129,20 +122,14 @@ elif d['type'] == 'rotNet':
     elif d['layers'] == 3: # TODO?
         net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
         ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
-                
-        
-        
         
 if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
 
-if args.name == 'yaml':
-    ss = str(timestamp) + '_LIGHT_' + args.config.replace('.','_')
+#if args.name == 'yaml':
+#    ss = str(timestamp) + '_LIGHT_' + args.config.replace('.','_')
     
 spec_string = ss
-
-
-
 
 ###########   loading and preprocessing the data    ############
 
@@ -153,9 +140,7 @@ spec_string = ss
 print ('Net')
 print (net)
 
-
-_yes = input('press enter to continue: ')
-
+# _yes = input('press enter to continue: ')
 
 ### Training Data Transforms
 if d['dataset'] == 'cifar10':
@@ -247,6 +232,10 @@ elif d['dataset'] == 'mnist':
 
 ## Set up files and directories for output:
 out_dir = args.out_dir
+
+if DEV:
+    out_dir = "DEV_OUT"
+
 experiment_out_dir = os.path.join(out_dir, spec_string)
 
 #copyfile(yaml_file_name, experiment_out_dir + '/')
@@ -258,8 +247,9 @@ if not os.path.exists(experiment_out_dir):
 
 
 txt_file_name = os.path.join( experiment_out_dir, spec_string + ".txt")
-csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv")
-validation_csv_file_name = os.path.join( experiment_out_dir, spec_string + "_VALIDATION.csv")
+csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv") # For Loss
+train_csv_file_name = os.path.join( experiment_out_dir, spec_string + "_TRAIN_ACCURACY_AND_LOSS.csv")
+test_csv_file_name = os.path.join( experiment_out_dir, spec_string + "_TEST_ACCURACY_ACCURACY_AND_LOSS.csv")
 
 csv_file = open(csv_file_name, "w", 1)
 txt_file = open(txt_file_name, "w", 1)
@@ -267,10 +257,12 @@ txt_file = open(txt_file_name, "w", 1)
 # Save YAML dictionary to file:            
 print(str(d), file = txt_file)
 
-validation_csv_file = open(validation_csv_file_name, "w", 1)
+train_csv_file = open(train_csv_file_name, "w", 1)
+test_csv_file       = open(test_csv_file_name, "w", 1)
 
 print('batch,epoch,loss', file=csv_file)
-print('epoch,accuracy,validationNLLLoss', file=validation_csv_file)
+print('epoch,accuracy, NLLLoss', file=train_csv_file)
+print('epoch,accuracy, NLLLoss', file=test_csv_file)
 
 ###############   Test if you can use the GPU   ################
 
@@ -309,7 +301,7 @@ winLoss = viz.line(
 )
     
 winACC = viz.line(
-    Y=np.array([0]), name='test',
+    Y=np.array([0]), name='train',
     opts=dict(
             fillarea=False,
             showlegend=True,
@@ -338,6 +330,9 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 ############## Train the network  ######################
 
 num_epochs = 300 # paper: 300
+
+if DEV:
+    num_epochs = 1
 
 #log_file = open('logs/grad_stats', 'w')
 def training_epoch(epoch):
@@ -457,15 +452,16 @@ def validation(epoch, test=True):
         print('Accuracy of the network on the 10000 test images: %d %%' % accuracy, file=txt_file)
         print('Test NLLLoss = ', NLLLoss)
         print('Test NLLLoss = ', NLLLoss, file=txt_file)
+        print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=test_csv_file) #Save CSV: #
 
     else:
         print('Accuracy of the network on all training images: %d %%' % accuracy)
         print('Accuracy of the network on all training images: %d %%' % accuracy, file=txt_file)
         print('Train NLLLoss = ', NLLLoss)
         print('Train NLLLoss = ', NLLLoss, file=txt_file)
-
-    #Save CSV: #
-    print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=validation_csv_file) #TODO
+        print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=train_csv_file) 
+    
+   
     
     # update plot
     if test:
@@ -539,7 +535,8 @@ net.eval() # set to evaluation mode
 
 txt_file.close()
 csv_file.close()
-validation_csv_file.close()
+test_csv_file.close()
+train_csv_file.close()
 
 # Save the model:
 model_file_name = os.path.join( experiment_out_dir, spec_string + ".final_model")
