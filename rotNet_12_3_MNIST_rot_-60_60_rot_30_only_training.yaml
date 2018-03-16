@@ -1,19 +1,19 @@
-# MNIST ROTATION
+# Comparism to rot MNIST
 # experiment configuration:
-type : 'nptn'
+type : 'rotNet'
 layers : 2
 g : 3
 n1 : 12
 n2 : 16
 filtersize : 5
+alpha :  30
 
 batchsize : 32
-
 ### DATA SET ####
 dataset : mnist # 'cifar10' or 'mnist'
 # optional parameters:
 translation_train : 2 # default = 2
-rotation_train : 90 # default = 0
+rotation_train : 0 # default = 0
 
 translation_test : 0 # default = translation_train
-rotation_test : 90 # default = rotation_train
+rotation_test : 60 # default = rotation_train
