@@ -31,7 +31,7 @@ from network import twoLayeredCNN
 from network import threeLayeredCNN
 from newNet import twoLayeredROTNET
 
-DEV = True # if true, use the dev output folder.
+DEV = False # if true, use the dev output folder.
 
 '''
 parser = argparse.ArgumentParser(description='Experiment')
@@ -54,7 +54,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "CNN_no_train_rotation_MNIST_rot_60.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "rotNet_12_3_MNIST_rot_-60_60_rot_30_only_training.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 parser.add_argument('-n', '--name', default = "yaml", type=str, help='yaml: Will use the yaml file name for folder and file names. n will use number of layers as file name')
