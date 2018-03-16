@@ -52,7 +52,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "MNIST_CNN_rot_60.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "rotNet_12_3_MNIST_rot_-60_60_rot_60.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 parser.add_argument('-n', '--name', default = "yaml", type=str, help='yaml: Will use the yaml file name for folder and file names. n will use number of layers as file name')
@@ -92,6 +92,7 @@ elif d['dataset'] == 'cifar10':
     ss = ss + '_cifar10_3M'
     image_size = 32
 
+#NPTN
 if d['type'] == 'nptn':
     ss = ss + '_nptn_' + str(d['layers']) + 'layers'
     if   d['layers'] == 2:
@@ -100,9 +101,19 @@ if d['type'] == 'nptn':
     elif d['layers'] == 3:
         net = threeLayeredNPTN(filtersize=d['filtersize'], G=d['g'] ,n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
         ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['g']) + 'G_' + str(d['filtersize']) + "Kernel"
-
+#CNN
 elif d['type'] == 'cnn':
     ss = ss + '_cnn_' + str(d['layers']) + 'layers'
+    if d['layers'] == 2:
+        net = twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel"
+    elif d['layers'] == 3:
+        net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
+
+#ROTN #NPRN Non-Parametric Rotation Network      #TODO   
+elif d['type'] == 'rotn':
+    ss = ss + '_rotn_' + str(d['layers']) + 'layers'
     if d['layers'] == 2:
         net = twoLayeredCNN(d['filtersize'], in_channels=M, N1=d['n1'], N2=d['n2'])
         ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel"
@@ -113,8 +124,8 @@ elif d['type'] == 'cnn':
 elif d['type'] == 'rotNet':
     ss = ss + '_rotNet_' + str(d['layers']) + 'layers'
     if d['layers'] == 2:
-        net = twoLayeredROTNET(d['filtersize'], M=M, N1=d['n1'], N2=d['n2'], alpha=d['alpha'])
-        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel" + '_kernelRot_' + str(d['rotmin']) + '_' + str(d['rotmax'])
+        net = twoLayeredROTNET(k=d['filtersize'], M=M, N1=d['n1'], N2=d['n2'], alpha=d['alpha'])
+        ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['filtersize']) + "Kernel" + '_alpha_' + str(d['alpha']) 
     elif d['layers'] == 3: # TODO?
         net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
         ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
@@ -321,14 +332,14 @@ if use_cuda:
 ############## Chooses optimizer and loss  ##############
 
 criterion = nn.NLLLoss()   #TODO which things here?!
-optimizer = optim.SGD(net.parameters(), lr=0.001)
+optimizer = optim.SGD(net.parameters(), lr=0.1)
 
 
 ############## Train the network  ######################
 
 num_epochs = 300 # paper: 300
 
-log_file = open('logs/grad_stats', 'w')
+#log_file = open('logs/grad_stats', 'w')
 def training_epoch(epoch):
     running_loss = 0.0
     correct = 0
@@ -497,13 +508,18 @@ def validation(epoch, test=True):
 best_accuracy = 0.0
 for epoch in range(num_epochs):  # loop over the dataset multiple times
 
-    if epoch == 30:
-        optimizer = optim.SGD(net.parameters(), lr=0.0005)
+    if epoch == 150:
+        optimizer = optim.SGD(net.parameters(), lr=0.01)
         print('Learning rate adapted') # TODO change learning rate (optimizer? after certain iterations)
+    if epoch == 225:
+        optimizer = optim.SGD(net.parameters(), lr=0.001)
+        print('Learning rate adapted')
+    #if epoch == 30:
+    #    optimizer = optim.SGD(net.parameters(), lr=0.0005)
+    #    print('Learning rate adapted') # TODO change learning rate (optimizer? after certain iterations)
     #if epoch == 225:
     #    optimizer = optim.SGD(net.parameters(), lr=0.001)
     #    print('Learning rate adapted')
-    
     # call training epoch once
     training_epoch(epoch)
     
