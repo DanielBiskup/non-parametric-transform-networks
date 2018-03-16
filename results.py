@@ -45,18 +45,27 @@ print('Kernelsize=5, Rotation=60?')
 print('after 300 epochs')
 print('NPTN(18,2)  Accuracy 96.32%, Loss = 0.12038491313457489')
 print('CNN(36) Accuracy 96.28 %, Loss = 0.11692798318862915' )
-print('\n\nKernelsize=5, Rotation=90')
+print('\nKernelsize=5, Rotation=90')
 print('CNN(36) Accuracy 94% Loss = 0.1816810576915741')
+print('NPTN(18,2), Accuracy 94, Loss = 0.2116')
 
+print('\n\n')
+print('NO HORIZONTAL FLIPPING Rotation Experiments on MNIST')
 
-print('Rotation Experiments on MNIST without horizontal flipping')
-print('NPTN(18,2): Test NLLLoss =  0.0738690174460411, Acc 97 %' )
-print('CNN(36): Test NLLLoss =  0.07362796711921692, 97 %')
+print('Rotation=90')
+print('NPTN(18,2): Test NLLLoss =  0.0738690174460411, Acc 97.72 %, BS32')
+print('CNN(36): Test NLLLoss =  0.07362796711921692, 97.69 %')
+print('\nRotation=60')
+print('CNN(36) Test Nllloss = 0.0559881, Acc = 98.43')
 
-print('more values should be on lab computer')
+print('\n\nISSUES: Higher test acc/ lower test loss \n')
 
+print('Experiment proposals:')
+print('-- rot 60 CNN')
+print('-- 12,3? NPTN rot 60')
+print('less important')
+print('-- 12,3 NPTN rot 90')
 
-print('ISSUES: Higher test acc/ lower test loss')
 
 print('\n\n ############################################################# \n\n')
       
@@ -68,7 +77,12 @@ print('\n\n ############################################################# \n\n')
       
 print('Rot Net experiments')
 
+print('RotNet(12,3) MNIST 60 rot,alpha=60 Test NLLloss = 0.0888415, Acc=97.18 ')
 
+print('\n\nScheduled:')
+print('NO train rotation rot 60')
+print('\n\nExperiment proposals')
+print('- rot 90 comparism' )
 
 
 
