@@ -54,7 +54,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "NPTN12_3_MNIST_rot_60.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "CNN_no_train_rotation_MNIST_rot_60.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 parser.add_argument('-n', '--name', default = "yaml", type=str, help='yaml: Will use the yaml file name for folder and file names. n will use number of layers as file name')
@@ -131,9 +131,6 @@ elif d['type'] == 'rotNet':
     elif d['layers'] == 3: # TODO?
         net = threeLayeredCNN(filtersize=d['filtersize'], n1=d['n1'], n2=d['n2'], n3=d['n3'], input_channel=M)
         ss = ss + str(d['n1']) + 'N1_' + str(d['n2']) + 'N2_'+ str(d['n3']) + 'N3_'+ str(d['filtersize']) + "Kernel"
-                
-        
-        
         
 if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
@@ -142,9 +139,6 @@ if is_set(d, 'rotation_train'):
 #    ss = str(timestamp) + '_LIGHT_' + args.config.replace('.','_')
     
 spec_string = ss
-
-
-
 
 ###########   loading and preprocessing the data    ############
 
@@ -155,9 +149,7 @@ spec_string = ss
 print ('Net')
 print (net)
 
-
-_yes = input('press enter to continue: ')
-
+# _yes = input('press enter to continue: ')
 
 ### Training Data Transforms
 if d['dataset'] == 'cifar10':
@@ -347,6 +339,9 @@ optimizer = optim.SGD(net.parameters(), lr=0.1)
 ############## Train the network  ######################
 
 num_epochs = 300 # paper: 300
+
+if DEV:
+    num_epochs = 1
 
 #log_file = open('logs/grad_stats', 'w')
 def training_epoch(epoch):
