@@ -136,8 +136,8 @@ elif d['type'] == 'rotNet':
 if is_set(d, 'rotation_train'):
     ss = ss + '__rotation' + str(d['rotation_train'])
 
-if args.name == 'yaml':
-    ss = str(timestamp) + '_LIGHT_' + args.config.replace('.','_')
+#if args.name == 'yaml':
+#    ss = str(timestamp) + '_LIGHT_' + args.config.replace('.','_')
     
 spec_string = ss
 
@@ -258,8 +258,9 @@ if not os.path.exists(experiment_out_dir):
 
 
 txt_file_name = os.path.join( experiment_out_dir, spec_string + ".txt")
-csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv")
-validation_csv_file_name = os.path.join( experiment_out_dir, spec_string + "_VALIDATION.csv")
+csv_file_name = os.path.join( experiment_out_dir, spec_string + ".csv") # For Loss
+train_csv_file_name = os.path.join( experiment_out_dir, spec_string + "_TRAIN_ACCURACY_AND_LOSS.csv")
+test_csv_file_name = os.path.join( experiment_out_dir, spec_string + "_TEST_ACCURACY_ACCURACY_AND_LOSS.csv")
 
 csv_file = open(csv_file_name, "w", 1)
 txt_file = open(txt_file_name, "w", 1)
@@ -267,10 +268,12 @@ txt_file = open(txt_file_name, "w", 1)
 # Save YAML dictionary to file:            
 print(str(d), file = txt_file)
 
-validation_csv_file = open(validation_csv_file_name, "w", 1)
+train_csv_file = open(train_csv_file_name, "w", 1)
+test_csv_file       = open(test_csv_file_name, "w", 1)
 
 print('batch,epoch,loss', file=csv_file)
-print('epoch,accuracy,validationNLLLoss', file=validation_csv_file)
+print('epoch,accuracy, NLLLoss', file=train_csv_file)
+print('epoch,accuracy, NLLLoss', file=test_csv_file)
 
 ###############   Test if you can use the GPU   ################
 
@@ -309,7 +312,7 @@ winLoss = viz.line(
 )
     
 winACC = viz.line(
-    Y=np.array([0]), name='test',
+    Y=np.array([0]), name='train',
     opts=dict(
             fillarea=False,
             showlegend=True,
@@ -457,15 +460,16 @@ def validation(epoch, test=True):
         print('Accuracy of the network on the 10000 test images: %d %%' % accuracy, file=txt_file)
         print('Test NLLLoss = ', NLLLoss)
         print('Test NLLLoss = ', NLLLoss, file=txt_file)
+        print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=test_csv_file) #Save CSV: #
 
     else:
         print('Accuracy of the network on all training images: %d %%' % accuracy)
         print('Accuracy of the network on all training images: %d %%' % accuracy, file=txt_file)
         print('Train NLLLoss = ', NLLLoss)
         print('Train NLLLoss = ', NLLLoss, file=txt_file)
-
-    #Save CSV: #
-    print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=validation_csv_file) #TODO
+        print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=train_csv_file) 
+    
+   
     
     # update plot
     if test:
@@ -539,7 +543,8 @@ net.eval() # set to evaluation mode
 
 txt_file.close()
 csv_file.close()
-validation_csv_file.close()
+test_csv_file.close()
+train_csv_file.close()
 
 # Save the model:
 model_file_name = os.path.join( experiment_out_dir, spec_string + ".final_model")
