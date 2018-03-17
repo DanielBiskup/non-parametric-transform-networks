@@ -58,11 +58,12 @@ print('NPTN(18,2): Test NLLLoss =  0.0738690174460411,  Acc 97.72 %')
 print('CNN(36):    Test NLLLoss =  0.07362796711921692, Acc 97.69 %')
 print('\nRotation=60')
 print('CNN(36) Test Nllloss = 0.0559881, Acc = 98.43')
+print('NPNT(12,3) Test Nllloss = 0.04085, Acc = 98.75')
 
 print('\n\nISSUES: Higher test acc/ lower test loss \n')
 
 print('Experiment proposals:')
-print('Running: -- 12,3? NPTN rot 60')
+print('18,2 NPTN rot 60)
 print('less important')
 print('-- 12,3 NPTN rot 90')
 
@@ -98,7 +99,8 @@ print('NO train rotation rot 60')
 print('\n\nExperiment proposals')
 print('Baseline CNN no train rotation rot 60')
 print('rotnet higher G for rot 60')
-
+print('less important')
+print('-- rotnet 12,3 lower alpha')
 
 
 
