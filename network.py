@@ -49,10 +49,11 @@ class NPTN(nn.Module):
 class twoLayeredNPTN(nn.Module):
     def __init__(self, N, G, filtersize, in_channels=3):
         super(twoLayeredNPTN, self).__init__()
-        if in_channels == 3:   # CIFAR
-            self.final_layer_dim = (7-np.int(filtersize/1.7))**2 # works for filtersizes 3,5,7
-        else: # MNIST
-            self.final_layer_dim = 4 * 4
+        if in_channels==3: # CIFAR
+            self.input_size=(3,32,32)
+        else:
+            self.input_size=(1,28,28)
+
         # first layer 
         self.N = N
         self.nptn = NPTN(in_channels, N, G, filtersize)
@@ -64,9 +65,11 @@ class twoLayeredNPTN(nn.Module):
         self.batchnorm2 = nn.BatchNorm2d(16) 
         self.prelu2 = nn.PReLU()
         self.pool2 = nn.MaxPool2d(2)
-        self.fc1 = nn.Linear(16 * self.final_layer_dim, 10) # TODO
-
-    def forward(self, x):
+        
+        n = self.num_flat_features(self.input_size)
+        self.fc1 = nn.Linear(n, 10) # TODO
+   
+    def features(self, x):    
         #print('============================================================')
         #print('the input x to the network ', x.size())
         x = self.nptn(x)
@@ -82,8 +85,12 @@ class twoLayeredNPTN(nn.Module):
         #print('after batchnorm 2 ', x.size())
         x = self.pool2(self.prelu2(x))
         #print('shape second layer ', x.size())
+        return x
+
+    def forward(self, x):
+        x = self.features(x)
         
-        x = x.view(-1, 16 * 4 * 4) # TODO
+        x = x.view(x.size(0), -1) # TODO
         #print('shape second layer after flattening', x.size())
         
         # BUG DESCRIPTION:
@@ -97,13 +104,13 @@ class twoLayeredNPTN(nn.Module):
         #print('after softmax ', x.size())
         return x
     
-    def num_flat_features(self, x):
-        #copied from: http://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html#sphx-glr-beginner-blitz-neural-networks-tutorial-py
-        size = x.size()[1:]  # all dimensions except the batch dimension
-        num_features = 1
-        for s in size:
-            num_features *= s
-        return num_features
+    def num_flat_features(self, input_size):
+        t = Variable(torch.ones(1, *input_size))
+        #print('t.size() = ' + str(t.size()))
+        f = self.features(t)
+        #print('Shape after convolution layers = ' + str(f.size()))
+        n = int(np.prod(f.size()[1:]))
+        return n
     
 class twoLayeredCNN(nn.Module):
     def __init__(self, filtersize, in_channels=3, N1=48, N2=16):

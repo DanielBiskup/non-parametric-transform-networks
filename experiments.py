@@ -54,7 +54,7 @@ net_type = args.network_type
 '''
 
 parser = argparse.ArgumentParser(description='Experiment')
-parser.add_argument('-c', '--config', default = "rotNet_12_3_MNIST_rot_-60_60_rot_30_only_training.yaml", type=str, help='path to a .yaml configuration file')
+parser.add_argument('-c', '--config', default = "E09_NPTN_M12_G4_CIFAR_rot_0.yaml", type=str, help='path to a .yaml configuration file')
 # parser.add_argument('-c', '--config', default = "x.yaml", type=str, help='path to a .yaml configuration file')
 parser.add_argument('-o', '--out_dir', default = "output", type=str)
 parser.add_argument('-n', '--name', default = "yaml", type=str, help='yaml: Will use the yaml file name for folder and file names. n will use number of layers as file name')
@@ -400,8 +400,8 @@ def training_epoch(epoch):
     print('----------------------------------------------', file=txt_file)
     print('Epoch ', epoch)
     print('Epoch ', epoch, file=txt_file)    
-    print('Accuracy of the network on the train images: %d %%' % accuracy)
-    print('Accuracy of the network on the train images: %d %%' % accuracy, file=txt_file)
+    print('Accuracy of the network on the train images: %f %%' % accuracy)
+    print('Accuracy of the network on the train images: %f %%' % accuracy, file=txt_file)
 
     viz.line(
         X=np.array([epoch + 1]), 
@@ -448,15 +448,15 @@ def validation(epoch, test=True):
     NLLLoss = running_loss / (dataset_size/batch_size)
 
     if test:
-        print('Accuracy of the network on the 10000 test images: %d %%' % accuracy)
-        print('Accuracy of the network on the 10000 test images: %d %%' % accuracy, file=txt_file)
+        print('Accuracy of the network on the 10000 test images: %f %%' % accuracy)
+        print('Accuracy of the network on the 10000 test images: %f %%' % accuracy, file=txt_file)
         print('Test NLLLoss = ', NLLLoss)
         print('Test NLLLoss = ', NLLLoss, file=txt_file)
         print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=test_csv_file) #Save CSV: #
 
     else:
-        print('Accuracy of the network on all training images: %d %%' % accuracy)
-        print('Accuracy of the network on all training images: %d %%' % accuracy, file=txt_file)
+        print('Accuracy of the network on all training images: %f %%' % accuracy)
+        print('Accuracy of the network on all training images: %f %%' % accuracy, file=txt_file)
         print('Train NLLLoss = ', NLLLoss)
         print('Train NLLLoss = ', NLLLoss, file=txt_file)
         print('%i,%.3f,%.3f' % (epoch, accuracy, NLLLoss ), file=train_csv_file) 
