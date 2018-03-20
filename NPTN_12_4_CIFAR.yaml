@@ -1,0 +1,19 @@
+# MNIST ROTATION
+# experiment configuration:
+type : 'nptn'
+layers : 2
+g : 4
+n1 : 12
+n2 : 16
+filtersize : 5
+
+batchsize : 4
+
+### DATA SET ####
+dataset : cifar10 # 'cifar10' or 'mnist'
+# optional parameters:
+translation_train : 4 # is 4 for cifar10 experiments in paper
+rotation_train : 0 # default = 0
+
+translation_test : 4 # default = translation_train
+rotation_test : 0 # default = rotation_train
