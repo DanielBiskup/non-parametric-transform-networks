@@ -5,6 +5,9 @@
 %
 \documentclass{llncs}
 %
+\usepackage{graphicx}
+\usepackage{amsmath}
+
 %\usepackage{makeidx}  % allows for indexgeneration
 %
 \begin{document}
@@ -12,27 +15,23 @@
 \frontmatter          % for the preliminaries
 %
 \pagestyle{headings}  % switches on printing of running heads
-\addtocmark{Hamiltonian Mechanics} % additional mark in the TOC
+\addtocmark{Non-Parametric Transformation Networks} % additional mark in the TOC
 %
-
+\mainmatter              % start of the contributions
 %
-\author{Ivar Ekeland\inst{1} \and Roger Temam\inst{2}
-Jeffrey Dean \and David Grove \and Craig Chambers \and Kim~B.~Bruce \and
-Elsa Bertino}
+\title{Non-Parametric Transformation Networks}
 %
-\authorrunning{Ivar Ekeland et al.} % abbreviated author list (for running head)
+\titlerunning{Non-Parametric Transformation Networks}  % abbreviated title (for running head)
+%  
+%
+\author{Daniel Biskup and Catherine Capellen}
+%
+\authorrunning{Daniel Biskup and Catherine Capellen} % abbreviated author list (for running head)
 %
 %%%% list of authors for the TOC (use if author list has to be modified)
-\tocauthor{Ivar Ekeland, Roger Temam, Jeffrey Dean, David Grove,
-Craig Chambers, Kim B. Bruce, and Elisa Bertino}
+\tocauthor{Daniel Biskup and Catherine Capellen}
 %
-\institute{Princeton University, Princeton NJ 08544, USA,\\
-\email{I.Ekeland@princeton.edu},\\ WWW home page:
-\texttt{http://users/\homedir iekeland/web/welcome.html}
-\and
-Universit\'{e} de Paris-Sud,
-Laboratoire d'Analyse Num\'{e}rique, B\^{a}timent 425,\\
-F-91405 Orsay Cedex, France}
+\institute{University of Bonn}
 
 \maketitle              % typeset the title of the contribution
 
@@ -41,8 +40,41 @@ The abstract
 \end{abstract}
 %
 
+\section{Introduction}
+GENERAL TOPIC: Object recognition, CNNs, POOLING, PTN/NPTN, Paper results (SHORT) 
+TASK
+ROTNET TASK
+\section{Related Work}
+in lab report ?
+\section{Networks Architectures ( aka Methods)}
+POOLING PTN NPTN 
+\section{Implementation in (or with?!) (or using?!) PyTorch}
+NPTN IMPLEMENTATION
 
+DETERMINATION OF NETWORK DIMENSION (48,16): EQUAL AMOUNT OF PARAMETERS
 
+ROTNET: GRIDSAMPLER, DIFFERENTIABLE
+ 
+(DIMENSION DING)
+
+4 EXPERIMENTS
+- DESIGN (WHAT WAS IN PAPER AND WHAT WASN'T)
+
+\section{5
+Experiments and Results}			
+TRAIN vs TEST ERROR?
+
+CONCLUSION: PAPER IS NOT REPRODUCABLE
+NPTNs FROM THIS EXPERIMENTS NOT BETTER 
+(
+ROTNET BAD
+
+\section{Conclusion}
+WHY WE THINK NPTNS ARE LESS POWERFULL
+WHY ROTNETS ARE WORSE THAN NPTNs
+WHY IT IS MAYBE NOT A GOOD IDEA TO ROTATE EARLY FILTERs
+
+\section{Discussion and further work}
 %
 % ---- Bibliography ----
 %
