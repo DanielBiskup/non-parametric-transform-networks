@@ -16,12 +16,12 @@ print('NLLL loss')
 
 
 NPTN_paras = [(48,1), (24,2), (16,3)]
-NPTN_losses = [0.9322558387160301,0.9056078843712807,0.9312066503047943]
-NPTN_accs = [67.63,68.97,67.55]
+NPTN_losses = [0.93679728,0.9056078843712807,0.9312066503047943]
+NPTN_accs = [67.95,68.97,67.55]
 
 x = [1,2,3]
 plt.plot(x, NPTN_losses, marker='p', label='NPTN')
-plt.plot([1],[1.00062], color='r', marker='p', label='CNN')  #  TODO insert actual value
+plt.plot([1],[0.92783253], color='r', marker='p', label='CNN')  #  TODO insert actual value
 plt.xlabel('(N,G)')
 plt.ylabel('NLLL loss')
 plt.xticks(x, ['(48,1)','(24,2)','(16,3)'])
@@ -30,7 +30,7 @@ plt.show()
 
 print('Accuracy (Not reported in original paper)')
 plt.plot([1,2,3], NPTN_accs, marker='p', label='NPTN')
-plt.plot([1],[65], color='r', marker='p', label='CNN')
+plt.plot([1],[68.29], color='r', marker='p', label='CNN')
 plt.xlabel('(N,G)')
 plt.xticks(x, ['(48,1)','(24,2)','(16,3)'])
 plt.ylabel('Accuracy')
