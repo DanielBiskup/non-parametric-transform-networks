@@ -74,12 +74,15 @@ invariant to small translations
 Loremipsum
 
 \section{Implementation in with PyTorch}
+Because the authors of the paper in NPTNs state, that they used PyTorch for their experiments, and because PyTorch is widely accepted and adopted within the scientific community, we decided to base our experiments on PyTorch as well.
+To be able to reproduce the experiments performed in the paper, we had to implement the NPTN layer. To see if our approach, the RotNet, would perform well we had to implement it as well.
 \subsection{The NPTN Layer}
 %TODO Add NPTN graphics!
-Now Ill tell you how we imlemented the NPTN layer. Lets say we have M inputs
-and want N outputs while using a set of G different filters for each path from
-input to output. For the convolutions we use pyTorchs Conv2d layer with M
-inputs and M*N*G outputs. The important implementation detail here is, that
+Lets say we have M inputs and want N outputs while using a set of G different filters for each path from input to output.
+Just as for CNNS, all filters we use during convolution are also parameters that are expected to be learned by the network.
+For this reason we can perform the convolutions by using an instance of the nn.Conv2d layer which will automatically initialize the filters and also register them as learn able parameters.
+
+with M inputs and M*N*G outputs. The important implementation detail here is, that
 we need to set the groups option to M, which causes Conv2d to use a filter bank
 of N*G filters per input.
 Right now we have N packs of G layers of one input stacked on each other
