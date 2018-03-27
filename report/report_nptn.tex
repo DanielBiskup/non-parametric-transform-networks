@@ -105,14 +105,11 @@ Therefore we determined possible dimensions for the amount of channels in the NP
 Again no new learning rate was given for this experiment, so we initially tried with the same experimental setup as in the first two experiments, but using this and the dimensions that seemed likely from the paper led the networks to overfit greatly and the loss values did not improve. 
 Therefore we reduced the amount of parameters and the learning rate and achieved a result, which had less generalization error. 
 Different than in the first two experiments accuracy and loss are not consistent anymore. While the loss starts getting worse after some iteration, the accuracy stays approximately stable and we therefore used the accuracy to compare the networks.
+[TODO show results]
 
+\section{Experiments for RotNet}
+The final experiment was designed by us to see if RotNet was able to perform one of the ideas behind its design: the ability to be invariant to rotations without learning them. For this we copied the setup of the MNIST rotation experiment with the difference, that this time we only rotated the test set. The results are shown in Figure [FIG]. 
 
-
-
-CONCLUSION: PAPER IS NOT REPRODUCABLE
-NPTNs FROM THIS EXPERIMENTS NOT BETTER 
-(
-ROTNET BAD
 
 \section{Conclusion}
 TRAIN vs TEST ERROR?
@@ -127,12 +124,8 @@ TATE EARLY FILTERs
 %
 \begin{thebibliography}{}
 %
-\bibitem[1980]{2clar:eke}
-Clarke, F., Ekeland, I.:
-Nonlinear oscillations and
-boundary-value problems for Hamiltonian systems.
-Arch. Rat. Mech. Anal. 78, 315--333 (1982)
-
+\bibitem[1]{PalSavvides}
+ Pal, D. K., \& Savvides, M. (2018). Non-Parametric Transformation Networks. arXiv preprint arXiv:1801.04520.
 \end{thebibliography}
 %\clearpage
 %\addtocmark[2]{Author Index} % additional numbered TOC entry
