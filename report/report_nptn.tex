@@ -44,18 +44,74 @@ The abstract
 GENERAL TOPIC: Object recognition, CNNs, POOLING, PTN/NPTN, Paper results (SHORT) 
 TASK
 ROTNET TASK
+
 \section{Related Work}
-in lab report ?
+in lab report ? ( DO WE NEED THIS SECTION?) Maybe mention Spatial-
+Transformer networks?
+
 \section{Networks Architectures ( aka Methods)}
-POOLING PTN NPTN 
-\section{Implementation in (or with?!) (or using?!) PyTorch}
+The kinds of networks this report is concerned with are Convolutional Neueral Networks (CNNs), Non-Parametric Transformation Networks (NPTNs), a custom network architecture we call RotNets.
+
+\subsection{Convolutional Neueral Networks}
+NPTNs can be seen as a generalization of CNNs. For that reason we will briefly discuss CNNs.
+\subsubsection{Convolution}
+As the name suggests, NPTSn make heavy use of the Convolution Operation. Convolutions calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for calculation the weighted sum are given by a matrix called filter or ”Kernel. Naturally different Kernels produce different results. In Computer Vision they are used to detect different kinds patterns. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, whithin CNNs they are expected to be learned by the network.
+%TODO Add Conv graphic
+\subsubsection{Spatial Max Pooling}
+Another important operation used in CNNs is Max Pooling.
+Each neuron in the max pooling layer connevts to a region of the previous
+layer and only take the maximum output. By doing this they make the network
+invariant to small translations
+
+\subsection{Non-Parametric Transformation Networks}
+\begin{itemize}
+  \item	mathmotivation
+  \item Architecture
+  \item How they are a generalization of CNNs
+\end{itemize}
+
+\subsection{RotNets}
+Loremipsum
+
+\section{Implementation in with PyTorch}
+\subsection{The NPTN Layer}
+%TODO Add NPTN graphics!
+Now Ill tell you how we imlemented the NPTN layer. Lets say we have M inputs
+and want N outputs while using a set of G different filters for each path from
+input to output. For the convolutions we use pyTorchs Conv2d layer with M
+inputs and M*N*G outputs. The important implementation detail here is, that
+we need to set the groups option to M, which causes Conv2d to use a filter bank
+of N*G filters per input.
+Right now we have N packs of G layers of one input stacked on each other
+but we want G layers of input 1 are followed by G layers of input 2 and so on.
+This can be archived by a simple permutation.
+Next we use MaxPool3d with stride 1 and kernel size (G,1,1), that is NOT
+spatial max pooling, but instead max pooling across the layers! Basically calcu-
+lating the pixel wise maximum of G consecutive layers.
+This is followed by the Average Pooling across layers, which is common to
+CNNs.
+As a side note: All those operations are tracked by pyTorchs AutoGrad which
+allows calculating the gradiands for BackPropagation.
+This concludes the implementation of the NPTN layer.
+
+But to run actual experiments, you need to stack multiple network layers on
+top of each other. And this is where the paper gave us a hard time, because it
+didnt specify the size of each layer precisely enough. So we had to try to guess
+which filter sizes they used.
+
+\subsection{The RotNet Layer}
+DETERMINATION OF NETWORK DIMENSION (48,16): EQUAL AMOUNT
+OF PARAMETERS
+ROTNET: GRIDSAMPLER, DIFFERENTIABLE
+(DIMENSION DING)
 NPTN IMPLEMENTATION
 
-DETERMINATION OF NETWORK DIMENSION (48,16): EQUAL AMOUNT OF PARAMETERS
+\subsubsection{The convolution}
+Within the implementation of the NPTN layer we were able to use an instantiation of the nn.Conv2d layer, because we had to learn each kernel we used individually, i.e every kernel used for convolution was also a parameter of the network.\\
+For the RotNet layer on the other hand, we need to use the nn.functional.conv2d function which expacts as argument the kernels we want to use, while inside the definition of the NPTN layers class we only "mark" the unrotated kernels as parameters by calling "" on them.
 
-ROTNET: GRIDSAMPLER, DIFFERENTIABLE
- 
-(DIMENSION DING)
+\subsubsection{GRIDSAMPLER, DIFFERENTIABLE}
+\subsubsection{DETERMINATION OF NETWORK DIMENSION (48,16): EQUAL AMOUNT OF PARAMETERS}
 
 4 EXPERIMENTS
 - DESIGN (WHAT WAS IN PAPER AND WHAT WASN'T)
