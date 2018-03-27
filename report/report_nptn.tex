@@ -76,25 +76,34 @@ Loremipsum
 \section{Implementation in with PyTorch}
 Because the authors of the paper in NPTNs state, that they used PyTorch for their experiments, and because PyTorch is widely accepted and adopted within the scientific community, we decided to base our experiments on PyTorch as well.
 To be able to reproduce the experiments performed in the paper, we had to implement the NPTN layer. To see if our approach, the RotNet, would perform well we had to implement it as well.
+
+When implementing new network architectures in PyTorch it's crucial to specify which values AutoGrad should view as parameters of the network in order for it to be able to apply backpropagation algorithm to the network. Furthermore you need to take care, that all calculations and operations performed in the forward path are differentiable by AutoGrad.
 \subsection{The NPTN Layer}
 %TODO Add NPTN graphics!
+Our implementation follows the description given in the NPTN paper.
 Lets say we have M inputs and want N outputs while using a set of G different filters for each path from input to output.
-Just as for CNNS, all filters we use during convolution are also parameters that are expected to be learned by the network.
-For this reason we can perform the convolutions by using an instance of the nn.Conv2d layer which will automatically initialize the filters and also register them as learn able parameters.
+Just as for CNNs, all filters we use during convolution are also parameters that are expected to be learned by the network.
+For this reason we can perform the convolutions by using an instance of the nn.Conv2d layer which will automatically initialize the filters and also register them as learn able parameters. This way, by using nn.Conv2d we don't need to worry about AutoGrad and differentiability of parameters ourself.
 
-with M inputs and M*N*G outputs. The important implementation detail here is, that
-we need to set the groups option to M, which causes Conv2d to use a filter bank
-of N*G filters per input.
-Right now we have N packs of G layers of one input stacked on each other
-but we want G layers of input 1 are followed by G layers of input 2 and so on.
-This can be archived by a simple permutation.
-Next we use MaxPool3d with stride 1 and kernel size (G,1,1), that is NOT
-spatial max pooling, but instead max pooling across the layers! Basically calcu-
-lating the pixel wise maximum of G consecutive layers.
-This is followed by the Average Pooling across layers, which is common to
-CNNs.
-As a side note: All those operations are tracked by pyTorchs AutoGrad which
-allows calculating the gradiands for BackPropagation.
+In it's constructor we specify it to have M inputs and M*N*G outputs. The important implementation detail here is, that we need to set the groups option to M, which causes Conv2d to use a filter bank of N*G filters per input.
+%TODO DEL USE SPACE NEEDED__ 
+Usually the output value of the nn.Conv2d layer with input size $(N, C_{in}, H, W)$ and output $(N, C_{out}, H_{out}, W_{out})$ can be precisely described as:
+\begin{equation*}
+\text{out}(N_i, C_{out_j}) = \text{bias}(C_{out_j}) +
+\sum_{k = 0}^{C_{in} - 1} \text{weight}(C_{out_j}, k) \star \text{input}(N_i, k)
+\end{equation*}
+but since setting groups to M causes nn.Conv2d to operate as if there are M conv layers side by side, each seeing one input channel and producing N*G output channels, $C_{in} = 1$, which means, that there will be no weighted sum since only one convolution will be calculated per output.
+%TODO __DEL USE SPACE NEEDED
+
+After calling the convolution, we have a tensor with N consecutive packs of G layers produced by the same input. But we want need that G layers of input 1 are followed by G layers of input 2 and so on. This can be archived by a simple permutation, which we decided to defer until after the max pooling across channels. We will come back to this permutation later.
+
+Next we use MaxPool3d with stride 1 and kernel size (G,1,1). Note, that this does not resemble spatial max pooling as is commonly used in CNNs, but rather the pixel wise maximum of G consecutive layers.
+
+To perform the aforementioned permutation, we defined a matrix of numbers from 0 to the number of layers left in the tensor, permuted it, and then indexed the tensor with it. Note, that this is valid, because indexing tensors is tracked by AutoGrad.
+%TODO Maybe add: Permutation with matrix as formula.
+
+This is followed by the Average Pooling across layers, which is common to CNNs. It's replaces the weighted sum operation in the formula of $\text{out}(N_i, C_{out_j})$ above.
+
 This concludes the implementation of the NPTN layer.
 
 But to run actual experiments, you need to stack multiple network layers on
@@ -115,6 +124,11 @@ For the RotNet layer on the other hand, we need to use the nn.functional.conv2d 
 
 \subsubsection{GRIDSAMPLER, DIFFERENTIABLE}
 \subsubsection{DETERMINATION OF NETWORK DIMENSION (48,16): EQUAL AMOUNT OF PARAMETERS}
+
+\subsection{More implementation details}
+\subsubsection{Input size to fully connected layer}
+Can be calculated dynamically.
+\subsubsection{YAML files for Experiment setup}
 
 4 EXPERIMENTS
 - DESIGN (WHAT WAS IN PAPER AND WHAT WASN'T)
@@ -190,6 +204,11 @@ Clarke, F., Ekeland, I.:
 Nonlinear oscillations and
 boundary-value problems for Hamiltonian systems.
 Arch. Rat. Mech. Anal. 78, 315--333 (1982)
+
+%TODO TO ADD
+% - The pyTorch documentation website?
+% - The main paper on NPTNs
+% - paper from where we took the convolution graphic.
 
 \end{thebibliography}
 %\clearpage
