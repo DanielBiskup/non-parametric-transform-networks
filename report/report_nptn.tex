@@ -63,12 +63,19 @@ Each neuron in the max pooling layer connevts to a region of the previous
 layer and only take the maximum output. By doing this they make the network
 invariant to small translations
 
-\subsection{Non-Parametric Transformation Networks}
+\subsection{Parametric and Non-Parametric Transformation Networks}
 \begin{itemize}
   \item	mathmotivation
   \item Architecture
   \item How they are a generalization of CNNs
 \end{itemize}
+
+Paramateric Transformation Networks (PTNs) and Non-Parametric Transformation Networks, as introduced in \cite{NPTN} try to add more tranformation invariance to CNNs. For this Max Pooling over layers is used. 
+Where a CNN has one filter, PTNs and NPTNs have $|G|$ filters and a pixel wise max pooling operation is performed over the filters, such that for each pixel the strongest result of the convolution with a filter is used. [IMAGE]
+
+For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a (unitary) group of transformations and are learned simultaniously to $w$ for each of the different $w$. [MAYBE use TN nodes for explanation?]
+
+
 
 \subsection{RotNets}
 Loremipsum
@@ -185,11 +192,9 @@ TATE EARLY FILTERs
 %
 \begin{thebibliography}{}
 %
-\bibitem[1980]{2clar:eke}
-Clarke, F., Ekeland, I.:
-Nonlinear oscillations and
-boundary-value problems for Hamiltonian systems.
-Arch. Rat. Mech. Anal. 78, 315--333 (1982)
+\bibitem[1]{NPTN}
+Pal, D. K., \& Savvides, M. (2018). Non-Parametric Transformation Networks. arXiv preprint arXiv:1801.04520.
+
 
 \end{thebibliography}
 %\clearpage
