@@ -60,8 +60,34 @@ ROTNET: GRIDSAMPLER, DIFFERENTIABLE
 4 EXPERIMENTS
 - DESIGN (WHAT WAS IN PAPER AND WHAT WASN'T)
 
-\section{5
-Experiments and Results}			
+\section{Experiments and Results}	
+In the following we will present three experiments from the paper that we tried to reproduce and tried to mimic as closely as possible. 
+All the experiments use a two-layered or three-layered structure which include either a NPTN layer, a Convolutional layer or a RotNet layer in each layer. The structure for the two-layered network is shown in Figure \ref{pic:net_structure}. The last softmax layer is not described in the paper, but was added by us [WHY softmax, because it's standard]. 
+
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.35]{result_images/network_structure.jpg}
+	\caption{Structure of a two layered network.}
+	\label{pic:network_structure}
+	\end{center}
+\end{figure}
+
+\subsection{Experiments on CIFAR10}
+The first experiment used the CIFAR10 dataset [CITE]. 
+The paper describes in detail the setup of the experiments regarding learning rate, data preprocessing and network dimensions. However other important information as filter size and loss function is missing. 
+For the filtersize we used 5, since in the other experiments, the paper mentions  filtersizes of 3,5 or 7 and 5 often shows the best performance for the NPTNs. 
+In Figure \ref{pic:first_experiment} we show the results from the paper next to our experimental results. For the loss function we chose Negative Log Likelihood Loss (NLLL) [WHY]. 
+However we did not get any comparable loss values as in the paper. Comparing the loss values of the networks to each other, in the paper, all NPTNs perform better than the CNN. In our results, only one of the NPTNs performs better.
+
+
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.35]{result_images/experiment1.jpg}
+	\caption{The first experiment}
+	\label{pic:first_experiment}
+	\end{center}
+\end{figure}
+
 TRAIN vs TEST ERROR?
 
 CONCLUSION: PAPER IS NOT REPRODUCABLE

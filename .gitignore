@@ -7,5 +7,11 @@ __pycache__/
 DEADJOE
 visualization.py
 playground.py
-
-
+raw/
+processed/
+*.aux
+*.pdf
+*.log
+visualization_try.py
+show_from_output.py
+*.gz
