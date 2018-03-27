@@ -9,9 +9,12 @@ visualization.py
 playground.py
 raw/
 processed/
-*.aux
-*.pdf
-*.log
 visualization_try.py
 show_from_output.py
 *.gz
+
+# LaTeX files 
+*.aux
+*.pdf
+*.log
+*.toc
