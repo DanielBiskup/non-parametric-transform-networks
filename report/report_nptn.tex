@@ -7,6 +7,8 @@
 %
 \usepackage{graphicx}
 \usepackage{amsmath}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
+%\RequirePackage[hyphens]{url}
 
 %\usepackage{makeidx}  % allows for indexgeneration
 %
@@ -50,14 +52,13 @@ GENERAL TOPIC: Object recognition, CNNs, POOLING, PTN/NPTN, Paper results (SHORT
 TASK
 ROTNET TASK
 
-\section{Networks Architectures ( aka Methods)}
+\section{Networks Architectures}
 The kinds of networks this report is concerned with are Convolutional Neueral Networks (CNNs), Non-Parametric Transformation Networks (NPTNs), a custom network architecture we call RotNets.
 
 \subsection{Convolutional Neueral Networks}
 NPTNs can be seen as a generalization of CNNs. For that reason we will briefly discuss CNNs.
 \subsubsection{Convolution}
 As the name suggests, NPTSn make heavy use of the Convolution Operation. Convolutions, as illustraded in Figure \ref{fig:conv}, calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for calculation the weighted sum are given by a matrix called filter or Kernel. Naturally different Kernels produce different results. In Computer Vision they are used to detect different kinds patterns. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, whithin CNNs they are expected to be learned by the network.
-
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=\textwidth]{result_images/Conv.png}
@@ -91,6 +92,7 @@ Where a CNN has one filter, PTNs and NPTNs have $|G|$ filters and a pixel wise m
 
 For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a (unitary) group of transformations and are learned simultaniously to $w$ for each of the different $w$. [MAYBE use TN nodes for explanation?]
 
+For $|G|=1$ a NPTN conceptually does the same as a CNN, which is why NPTNs can be considered to be a generalization of CNNs. 
 
 
 \subsection{RotNets}
@@ -131,18 +133,15 @@ Following this, to perform the aforementioned permutation, we defined a matrix o
 This is followed by the Average Pooling across layers, which is common to CNNs and actually replaces the weighted sum operation in the formula of $\text{out}(N_i, C_{out_j})$ above. This can be archived by using nn.AvgPool3d.
 
 \subsection{The RotNet Layer}
-%TODO BORIS
-DETERMINATION OF NETWORK DIMENSION (48,16): EQUAL AMOUNT
-OF PARAMETERS
-ROTNET: GRIDSAMPLER, DIFFERENTIABLE
-(DIMENSION DING)
-NPTN IMPLEMENTATION
-
-\subsubsection{The convolution}
-Within the implementation of the NPTN layer we were able to use an instantiation of the nn.Conv2d layer, because we had to learn each kernel we used individually, i.e every kernel used for convolution was also a parameter of the network.\\
-For the RotNet layer on the other hand, we need to use the nn.functional.conv2d function which expacts as argument the kernels we want to use, while inside the definition of the NPTN layers class we only "mark" the unrotated kernels as parameters by calling "" on them.
-
-\subsubsection{GRIDSAMPLER, DIFFERENTIABLE}
+\newcommand{\nnaffinegrid}{\nolinkurl{nn.functional.affine\textunderscore grid} }
+\newcommand{\nngridsample}{\nolinkurl{nn.functional.grid\textunderscore sample} }
+%\newcommand{\nnaffinegrid}{\url{nn.functional.affine\textunderscore grid}}
+%\newcommand{\nngridsample}{\url{nn.functional.grid\textunderscore sample}}
+Within the implementation of the NPTN layer we were able to use an instance of nn.Conv2d, because every kernel used for convolution was also a learn able parameter of the network.
+For the RotNet layer on the other hand, where we only want to learn the unrotated kernels while performing convolution with a few rotated versions of them, we can't use nn.Conv2d class but need to use the nn.functional.conv2d function instead.
+This requires us to define and initialize the unrotated kernels ourself. We also need to mark themas parameters of the network, in order for AutoGrad to be able to calculate the gradients required for back propagation. This is done by wrapping the nn.tensor describing them into an Parameter object.\\
+To compute the rotated versions of the kernels, we used the functions \nnaffinegrid and \nngridsample in combination, because they are differentiable by AutoGrad while proving interpolation which allows for arbitrary rotation angles to be applied. Also they are faster and better tested than anything we would be able to implement from scratch. We had to specify the rotation matrices we want to use, convert them to flow fields using \nnaffinegrid and then perform the rotations using \nngridsample.\\
+The rest of the layer implementation, namely the nn.MaxPool3d, permutation of layers and the final nn.AvgPool3d are the same as in our NPTN implementation.
 
 \subsection{Multi Layer Networks}
 \subsubsection{Determining the size of individual network layers}
@@ -154,13 +153,10 @@ The idea is to keep the number of parameters in the networks we want to compare 
 %TODO Fill in more detail here...
 
 \subsubsection{Input size to fully connected layer}
-Can be calculated dynamically.
+The last layer of a network hierarchy usually is a fully connected layer, and pyTorch requires us to specify the dimensions of this layer on instantiation. We decided to expect the input size of the network as an argument to the networks constructor, initialize a random tensor with the input size given, and then pass this through the forward pass excluding the fully connected layer in order to use the size of the result produced to initialize the fully connected layer. This makes it easier to experiment with parameters of the network without having to calculate and adapt the size of the fully connected layer manually every time. 
+
 \subsubsection{YAML files for Experiment setup}
-
-4 EXPERIMENTS
-- DESIGN (WHAT WAS IN PAPER AND WHAT WASN'T)
-
-
+We had to run a low of experiments. One option would have been to copy-past our code and adapt the parameters every time, which would have lead to unmaintainable and duplicated code. Instead we opted for YAML files which allowed us to define the experiments we want to run on a very high level.
 
 \section{Experiments and Results}	
 In the following we will present three experiments from the paper that we tried to reproduce and tried to mimic as closely as possible. 
