@@ -45,10 +45,6 @@ GENERAL TOPIC: Object recognition, CNNs, POOLING, PTN/NPTN, Paper results (SHORT
 TASK
 ROTNET TASK
 
-\section{Related Work}
-in lab report ? ( DO WE NEED THIS SECTION?) Maybe mention Spatial-
-Transformer networks?
-
 \section{Networks Architectures ( aka Methods)}
 The kinds of networks this report is concerned with are Convolutional Neueral Networks (CNNs), Non-Parametric Transformation Networks (NPTNs), a custom network architecture we call RotNets.
 
@@ -68,7 +64,7 @@ As the name suggests, NPTSn make heavy use of the Convolution Operation. Convolu
 \subsubsection{Spatial Max Pooling}
 Another important operation used in CNNs is Max Pooling.
 Each neuron in the max pooling layer takes into account only a subregion of the previous
-layers output and takes the maximum value of it to be it's output. By doing this they make the network invariant to small translations. Max pooling is illustrated in Figure \ref{fig:maxpooling}
+layers output and takes the maximum value of it to be it's output. By doing this they make the network invariant to small translations. Max pooling is illustrated in Figure \ref{fig:maxpooling}.
 
 \begin{figure}
 	\begin{center}
@@ -128,6 +124,7 @@ Following this, to perform the aforementioned permutation, we defined a matrix o
 This is followed by the Average Pooling across layers, which is common to CNNs and actually replaces the weighted sum operation in the formula of $\text{out}(N_i, C_{out_j})$ above. This can be archived by using nn.AvgPool3d.
 
 \subsection{The RotNet Layer}
+%TODO BORIS
 DETERMINATION OF NETWORK DIMENSION (48,16): EQUAL AMOUNT
 OF PARAMETERS
 ROTNET: GRIDSAMPLER, DIFFERENTIABLE
@@ -209,14 +206,19 @@ Different than in the first two experiments accuracy and loss are not consistent
 The final experiment was designed by us to see if RotNet was able to perform one of the ideas behind its design: the ability to be invariant to rotations without learning them. For this we copied the setup of the MNIST rotation experiment with the difference, that this time we only rotated the test set. The results are shown in Figure [FIG]. 
 
 
-\section{Conclusion}
+\section{Discussion and further work}
 TRAIN vs TEST ERROR?
 CONCLUSION: PAPER IS NOT REPRODUCABLE NPTNs FROM THIS
 EXPERIMENTS NOT BETTER ( ROTNET BAD
-\section{Discussion and further work}
+
 WHY WE THINK NPTNS ARE LESS POWERFULL WHY ROTNETS ARE
 WORSE THAN NPTNs WHY IT IS MAYBE NOT A GOOD IDEA TO RO-
 TATE EARLY FILTERs
+
+\section{What we learned}
+Dealing with tensor dimensions.
+Implement networks architectures using PyTorch.
+
 %
 % ---- Bibliography ----
 %
