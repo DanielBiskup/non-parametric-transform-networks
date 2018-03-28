@@ -41,6 +41,11 @@ The abstract
 %
 
 \section{Introduction}
+CNNs are state of the art in image recognition tasks [FIND CITE]. Certain kind of transformations on these images will not affect the class of the depicted object. 
+Examples for this are small translations, rotations or perspective transforms. Other kind of translations might change the object class, for example if you rotate the image of the number 6, it will look like a 9. 
+Using augmented data in training as well as choices in the architecture of CNNs as pooling layers aim to improve the robustness of CNNs to specific transformations. 
+Pooling is a method that is usually performed spatially, meaning that the 
+
 GENERAL TOPIC: Object recognition, CNNs, POOLING, PTN/NPTN, Paper results (SHORT) 
 TASK
 ROTNET TASK
@@ -89,7 +94,9 @@ For the PTNs these $|G|$ filters are transformations of a base filter with weigh
 
 
 \subsection{RotNets}
-Loremipsum
+Rotation Networks (RotNets) were our idea for the additional task of designing a network that is due to its structure invariant to rotations. 
+The idea is based on the same structure as PTNs (and NPTNs), just that the group of transformations is fixed to be rotations. Therefore there exists one set of weights $w$, which is learned for each $|G|$ transformations and this weights are rotated into the new kernels. 
+[ALPHA]
 
 \section{Implementation in with PyTorch}
 Because the authors of the paper in NPTNs state, that they used PyTorch for their experiments, and because PyTorch is widely accepted and adopted within the scientific community, we decided to base our experiments on PyTorch as well.
