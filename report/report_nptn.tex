@@ -135,7 +135,7 @@ After calling the convolution, we have a tensor with N consecutive packs of $|G|
 
 Next we use nn.MaxPool3d with stride 1 and kernel size ($|G|$,1,1). Note, that this does not resemble spatial max pooling as is commonly used in CNNs, but rather the pixel wise maximum of $|G|$ consecutive layers.
 
-Following this, to perform the aforementioned permutation, we defined a matrix of numbers from 0 to the number of layers left in the tensor, permuted it, and then indexed the tensor with it. Note, that this is valid, because indexing tensors is tracked by AutoGrad.
+Following this, to perform the aforementioned permutation, we defined a matrix of numbers from zero to the number of layers left in the tensor, permuted it, and then indexed the tensor with it. Note, that this is valid, because indexing tensors is tracked by AutoGrad.
 %TODO Maybe add: Permutation with matrix as formula.
 
 This is followed by the Average Pooling across layers, which is common to CNNs and actually replaces the weighted sum operation in the formula of $\text{out}(N_i, C_{out_j})$ above. This can be archived by using nn.AvgPool3d.
