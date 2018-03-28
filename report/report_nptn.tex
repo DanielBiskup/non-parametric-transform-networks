@@ -162,8 +162,8 @@ We had to run a lot of experiments. In order to avoid code duplication and promo
 
 \section{Experiments and Results}	
 In the following we will present three experiments from the paper that we tried to reproduce. 
-All the experiments used a two-layered or three-layered structure. [BETTER: From now on when we use the term layer, we are refering to a structure that consist of either Conv Nptn or Rotnet layer, followed by .... ] Before layer referred to the Convolution or NPTN-layers, but here it includes several different operations and  which includes either a NPTN layer, a Convolutional layer or a RotNet layer in each layer. The structure for the two-layered network is shown in Figure \ref{pic:net_structure}. The last softmax layer is not described in the paper, but was added by us [WHY softmax, because it's standard]. 
-
+All the experiments used a two-layered or three-layered structure. [BETTER: From now on when we use the term layer, we are refering to a structure that consist of either Conv Nptn or Rotnet layer, followed by .... ] Before layer referred to the Convolution or NPTN-layers, but here it includes several different operations and  which includes either a NPTN layer, a Convolutional layer or a RotNet layer in each layer. The structure for the two-layered network is shown in Figure \ref{pic:net_structure}. The last softmax layer is not described in the paper, but was added by us, since this is the usual choice for multi-class classification. [LOGSOFTMAX?]
+[TIME]
 \begin{figure}
 	\begin{center}
 	\includegraphics[scale=0.35]{result_images/network_structure.jpg}
@@ -172,21 +172,17 @@ All the experiments used a two-layered or three-layered structure. [BETTER: From
 	\end{center}
 \end{figure}
 
-\subsubsection{Determining the size of individual network layers}
-[Once the network layers needed are defined, and before useful experiments can be run, one has to stack multiple of them on top of each other to build multi layered networks.]
-Unfortunately the NPTN paper didn't specify the size of each layer precisely enough, which forced us to guess and try different values.
 
-The idea is to keep the number of parameters in the networks we want to compare roughly equivalent to allow comparisons between the different architectures performances.
-
-%TODO Fill in more detail here...
-
-\subsection{Experiments on CIFAR10}
-The first experiment used the CIFAR10 dataset [CITE]. A CNN and several NPTNs with different values for G are tested. The dimension of the NPTNs is changed for the different values of G such that all networks have the same amount of filters.
+\subsection{Experiments on CIFAR-10}
+The first experiment used the CIFAR-10 dataset [CITE]. A CNN and several NPTNs with different values for G are tested. The dimension of the NPTNs is changed for the different values of G such that all networks have the same amount of filters.
 The paper describes in detail the setup of the experiments regarding learning rate, data preprocessing and network dimensions. However other important information as filter size and loss function is missing. 
-For the filtersize we used 5, since in the other experiments, the paper mentions  filtersizes of 3,5 or 7 and 5 often shows the best performance for the NPTNs. 
-In Figure \ref{pic:first_experiment} we show the results from the paper next to our experimental results. For the loss function we chose Negative Log Likelihood Loss (NLLL) [WHY]. 
-However we did not get any comparable loss values as in the paper. Comparing the loss values of the networks to each other, in the paper, all NPTNs perform better than the CNN. In our results, only one of the NPTNs performs better.
-Since we are not sure if the loss used in the paper is the same, we also calculated the accuracy of the networks. The values are consistent with the loss for this experiment, so for each network if the loss is lower, then the accuracy is higher compared to other networks.
+For the filter size we used 5, since for the other experiments, the paper mentions  filter sizes of 3, 5 or 7 where 5 often shows the best performance for the NPTNs. 
+In Figure \ref{pic:first_experiment} we show the results from the paper next to our experimental results. For the loss function we chose Negative Log Likelihood Loss (NLLL) [WHY: CORSS ENTROPY]. 
+Comparing the loss values of the networks to each other, in the paper, all NPTNs perform better than the CNN. In our results, only one of the NPTNs performs better.
+However the loss values we obtained were to different to the ones from the paper to perform a direct comparison. 
+Also we are not sure if we used the same loss as in the paper.  Therefore we also calculated the accuracy of the networks. The values are consistent with the loss for this experiment, so for each network if the loss is lower, then the accuracy is higher compared to other networks.
+
+One thing we noticed during this and also the following experiment, is that the test loss was consitently lower than the training loss and also the test accuracy was higher than the training accuracy, even though we used different datasets and used the same function to calculate training and test measures.
 
 \begin{figure}
 	\begin{center}
@@ -196,39 +192,41 @@ Since we are not sure if the loss used in the paper is the same, we also calcula
 	\end{center}
 \end{figure}
 
-TRAIN vs TEST ERROR?
 
 \section{Rotation Experiments on MNIST}
 The second experiment from the paper compares a CNN and several NPTNs. Again the dimensions are chosen in a way that matches the values in the paper and leads to the same amount of filters for all networks. 
-This experiment uses the MNIST dataset [CITE] where all images from training and test set were randomly rotated up to a certain degree. 
-The paper shows the results from various maximal rotation degrees. we picked the two strongest rotations, since the performance difference between NPTNs and CNNs was the biggest there and performed our own experiments, adding also RotNets for comparison.
-The Paper did specify the data preprocessing in detail, but didn't give new instructions for learning rate, so we kept the same experiment setup as in the first experiment.
-The results from our experiments are shown in Figure \ref{pic:second_experiment}. [TODO: new graphic?]
-
+This experiment uses the MNIST dataset [CITE] where data augmentation was applied to all images from training and test set by randomly rotating the images up to a certain angle $\rho$. 
+The paper shows the results for different values of $\rho$. We chose to run the experiments which used the highest values for $\rho$, since the performance difference between NPTNs and CNNs was the biggest for those. Also we added RotNets for comparison.
+The Paper did specify the data preprocessing in detail, but didn't give new instructions for the learning rate, so we kept the same experiment setup as in the first experiment.
+The results from our experiments are shown in Figure \ref{pic:second_experiment}. [TODO: new graphic? or table]
+[Describe Results]
 
 \section{Three-layered-networks}
-This experiment from the paper compares three-layered NPTNs and CNNs of the CIFAR10 [CITE] dataset . 
+This experiment from the paper compares three-layered NPTNs and CNNs on the CIFAR-10 [CITE] dataset . 
 The network dimensions are not described well and the paper states that the amount of parameters for those networks is similar, but not exactly the same as in the previous experiments. 
 Therefore we determined possible dimensions for the amount of channels in the NPTNs and CNNs. 
-Again no new learning rate was given for this experiment, so we initially tried with the same experimental setup as in the first two experiments, but using this and the dimensions that seemed likely from the paper led the networks to overfit greatly and the loss values did not improve. 
-Therefore we reduced the amount of parameters and the learning rate and achieved a result, which had less generalization error. 
+Again no new learning rate was given for this experiment, so we initially tried with the same experimental setup as in the first two experiments, but using this the networks overfit greatly and the loss values did not improve. 
+Therefore we reduced the learning rate and achieved a result, which had less generalization error. 
 Different than in the first two experiments accuracy and loss are not consistent anymore. While the loss starts getting worse after some iteration, the accuracy stays approximately stable and we therefore used the accuracy to compare the networks.
 [TODO show results]
 
 \section{Experiments for RotNet}
-The final experiment was designed by us to see if RotNet was able to perform one of the ideas behind its design: the ability to be invariant to rotations without learning them. For this we copied the setup of the MNIST rotation experiment with the difference, that this time we only rotated the test set. The results are shown in Figure [FIG]. 
+The final experiment was designed by us to see if RotNet was able to perform one of the ideas behind its design: the ability to be invariant to rotations without learning them. [Maybe already say this in theory part] For this we copied the setup of the MNIST rotation experiment with the difference, that this time we only rotated the test set. The results are shown in Figure [FIG]. 
 
 
 \section{Discussion and further work}
-TRAIN vs TEST ERROR?
-CONCLUSION: PAPER IS NOT REPRODUCABLE NPTNs FROM THIS
-EXPERIMENTS NOT BETTER ( ROTNET BAD
+Some of the NPTNs perform better than the CNN. However the difference is not as prominent as in the paper. Since the runtime of the NPTNs is slightly higher than that of the CNNs, CNNs might be able to achieve better results in the same runtime.
+
+Overall it was difficult to compare our results to the paper, because important information is missing. 
+RotNet performed worse than the NPTNs and the CNNs in all experiments.
+It also did not show the expected advantages for handling rotated data, without learning these rotations first. 
 
 WHY WE THINK NPTNS ARE LESS POWERFULL WHY ROTNETS ARE
 WORSE THAN NPTNs WHY IT IS MAYBE NOT A GOOD IDEA TO RO-
 TATE EARLY FILTERs
 
 \section{What we learned}
+In this lab we learned much about the theory of CNNs 
 Dealing with tensor dimensions.
 Implement networks architectures using PyTorch.
 
