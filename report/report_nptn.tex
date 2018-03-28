@@ -27,7 +27,7 @@
 %  
 %
 \author{Daniel Biskup and Catherine Capellen
- \\Advisors: Arul Selvam and Max Schwarz}
+ \\Supervisors: Arul Selvam and Max Schwarz}
 %
 \authorrunning{Daniel Biskup and Catherine Capellen} % abbreviated author list (for running head)
 %
@@ -44,13 +44,15 @@ The abstract
 %
 
 \section{Introduction}
-Convolutional Neural Networks (CNNs) are state of the art in image classification tasks [FIND CITE]. Certain kind of transformations on these images will not affect the class of the depicted object. 
-Examples for this are small translations, rotations or perspective transforms. [Other kind of translations might change the object class, for example if you rotate the image of the number 6, it will look like a 9.] 
+Convolutional Neural Networks (CNNs) are state of the art in image classification tasks [FIND CITE]. Certain kind of transformations on these images do not affect the class of the depicted object. 
+Examples for this are small rotations, translations or perspective transforms. [Other kind of transformations might change the object class, for example if you rotate the image of the number 6, it will look like a 9.] 
 Using augmented data in training as well as choices in the architecture of CNNs as pooling layers, aim to improve the robustness of CNNs to specific transformations. 
 Pooling is a method that is usually performed spatially, to obtain invariance to small translations. 
 Non-Parametric Transformation Networks (NPTNs) are extensions of CNNs, which use Pooling to achieve invariance to other transformations by pooling over layers, rather than seperately on the different layers.
-\cite{NPTN} introduced NPTNs and performs experiments to test NPTNs against CNNS. In (this lab report) the following we will try to verify the results from the Paper. 
-Additionally we propose our own Architecture RotNet, which is designed to be invariant to Rotations and will also describe the experiments we performed with RotNet. 
+Pal and Savvides \cite{NPTN} introduced NPTNs and performed experiments to test NPTNs against CNNs. The main objective of our project was to verify the results from the paper. 
+[Task: design rotational additional netowrk] ditionally we propose our own Architecture RotNet, which is designed to be invariant to Rotations and will also describe the experiments we performed with RotNet. 
+[TODO]
+Inspired by the NPTNs we designed a network architecture,which we calle RotNet, supoused to be invariant specificaly towards rotations.
 
 First we will describe the network architectures in more detail in Section [REF], then describe our implemenation [REF] and lastly our Results [REF] and Conclusions [REF].
 
@@ -58,58 +60,57 @@ GENERAL TOPIC: Object recognition, CNNs, POOLING, PTN/NPTN, Paper results (SHORT
 TASK
 ROTNET TASK
 
+[IDEA: DO A SMALL PARAGRAPH ABOUT PAPER; SPATIAL TRANSFORMER NETWORK; Methods how to deal with transformations
 
-\section{Networks Architectures ( aka Methods)}
+\section{Networks Architectures}
 The kinds of networks this report is concerned with are Convolutional Neural Networks (CNNs), Non-Parametric Transformation Networks (NPTNs), a custom network architecture we call RotNets.
 
 \subsection{Convolutional Neural Networks}
-NPTNs can be seen as a generalization of CNNs. For that reason we will briefly discuss CNNs.
+NPTNs can be seen as a generalization of CNNs. For that reason we will briefly discuss CNNs. 
 \subsubsection{Convolution}
-As the name suggests, NPTSn make heavy use of the Convolution Operation. Convolutions, as illustraded in Figure \ref{fig:conv}, calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for calculation the weighted sum are given by a matrix called filter or Kernel. Naturally different Kernels produce different results. In Computer Vision they are used to detect different kinds patterns. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, whithin CNNs they are expected to be learned by the network.
+As the name suggests, NPTNs make heavy use of the Convolution Operation. Convolutions, as illustraded in Figure \ref{fig:conv}, calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network.
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=\textwidth]{result_images/Conv.png}
-		\caption{Convolving a 3 × 3 kernel over a 4 × 4 input using unit strides}
+		\caption{Convolving a 3 $\times$ 3 kernel over a 4 $\times$ 4 input using unit strides [SOURCE]}
 		\label{fig:conv}
 	\end{center}
 \end{figure}
 
 \subsubsection{Spatial Max Pooling}
-Another important operation used in CNNs is Max Pooling.
+Another common operation used in CNNs is Max Pooling.
 Each neuron in the max pooling layer takes into account only a subregion of the previous
-layers output and takes the maximum value of it to be it's output. By doing this they make the network invariant to small translations. Max pooling is illustrated in Figure \ref{fig:maxpooling}.
+layers output and takes the maximum value of it to be it's output. By doing this it makes the network invariant to small translations. Max pooling is illustrated in Figure \ref{fig:maxpooling}. [MAYBE WHY SPATIAL]
 
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=0.40\textwidth]{result_images/maxpooling.jpg}
-		\caption{Max Pooling in CNNs}
+		\caption{Example of Max Pooling over a 4 $\times$ 4 image with a window size of $2 \times 2$ and a stride of $2$ [MORE]}
 		\label{fig:maxpooling}
 	\end{center}
 \end{figure}
 
 \subsection{Parametric and Non-Parametric Transformation Networks}
-\begin{itemize}
-  \item	mathmotivation
-  \item Architecture
-  \item How they are a generalization of CNNs
-\end{itemize}
 
-Paramateric Transformation Networks (PTNs) and Non-Parametric Transformation Networks, as introduced in \cite{NPTN} try to add more tranformation invariance to CNNs. For this Max Pooling over layers is used. 
+Paramateric Transformation Networks (PTNs) and Non-Parametric Transformation Networks, as introduced in \cite{NPTN} try to add more tranformation invariance to CNNs. For this Max Pooling over layers is used. [DIFFERENCE TO SPATIAL]
+[Introduce group G]
 Where a CNN has one filter, PTNs and NPTNs have $|G|$ filters and a pixel wise max pooling operation is performed over the filters, such that for each pixel the strongest result of the convolution with a filter is used. [IMAGE]
 
 For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a (unitary) group of transformations and are learned simultaniously to $w$ for each of the different $w$. [MAYBE use TN nodes for explanation?]
+
+[NPTNs fitler independent]
 
 For $|G|=1$ a NPTN conceptually does the same as a CNN, which is why NPTNs can be considered to be a generalization of CNNs. 
 
 
 \subsection{RotNets}
-Rotation Networks (RotNets) were our idea for the additional task of designing a network that is due to its structure invariant to rotations. 
+Rotation Networks (RotNets) were our idea for the additional task of designing a network that due to its structure is invariant to rotations. 
 The idea is based on the same structure as PTNs (and NPTNs), just that the group of transformations is fixed to be rotations. Therefore there exists one set of weights $w$, which is learned for each $|G|$ transformations and this weights are rotated into the new kernels. 
-[ALPHA]
+[ALPHA!]
 
-\section{Implementation in with PyTorch}
-Because the authors of the paper in NPTNs state, that they used PyTorch for their experiments, and because PyTorch is widely accepted and adopted within the scientific community, we decided to base our experiments on PyTorch as well.
-To be able to reproduce the experiments performed in the paper, we had to implement the NPTN layer. To see if our approach, the RotNet, would perform well we had to implement it as well.
+\section{Implementation in PyTorch}
+As the authors of the paper on NPTNs [REF] we used PyTorch for the implemenation of the experiments.
+To be able to reproduce the experiments performed in the paper and conduct experiments on RotNet we had to implement the NPTN layer as well as the RotNet layer.
 
 When implementing new network architectures in PyTorch it's crucial to specify which values AutoGrad should view as parameters of the network in order for it to be able to apply backpropagation algorithm to the network. Furthermore you need to take care, that all calculations and operations performed in the forward path are differentiable by AutoGrad.
 \subsection{The NPTN Layer}
@@ -122,7 +123,7 @@ For this reason we can perform the convolutions by using an instance of the nn.C
 In it's constructor we specify it to have M inputs and M*N*G outputs. The important implementation detail here is, that we need to set the groups option to M, which causes Conv2d to use a filter bank of N*G filters per input.
 
 %TODO DEL USE SPACE NEEDED__ 
-Usually the output value of the nn.Conv2d layer with input size $(N, C_{in}, H, W)$ and output $(N, C_{out}, H_{out}, W_{out})$ can be precisely described as:
+As stated in the PyTorch documentation [REF] the output value of the nn.Conv2d layer with input size $(N, C_{in}, H, W)$ and output $(N, C_{out}, H_{out}, W_{out})$ can be precisely described as:
 \begin{equation*}
 \text{out}(N_i, C_{out_j}) = \text{bias}(C_{out_j}) +
 \sum_{k = 0}^{C_{in} - 1} \text{weight}(C_{out_j}, k) \star \text{input}(N_i, k)
@@ -130,7 +131,7 @@ Usually the output value of the nn.Conv2d layer with input size $(N, C_{in}, H, 
 but since setting groups to M causes nn.Conv2d to operate as if there are M conv layers side by side, each seeing one input channel and producing N*G output channels, $C_{in} = 1$, which means, that there will be no weighted sum since only one convolution will be calculated per output.
 %TODO __DEL USE SPACE NEEDED
 
-After calling the convolution, we have a tensor with N consecutive packs of G layers produced by the same input. But we want need that G layers of input 1 are followed by G layers of input 2 and so on. This can be archived by a simple permutation, which we decided to defer until after the max pooling across channels. We will come back to this permutation later.
+After calling the convolution, we have a tensor with N consecutive packs of G layers produced by the same input. But we need G layers of input 1 to be followed by G layers of input 2 and so on. This can be achieved by a simple permutation, which we decided to defer until after the max pooling across channels. We will come back to this permutation later.
 
 Next we use nn.MaxPool3d with stride 1 and kernel size (G,1,1). Note, that this does not resemble spatial max pooling as is commonly used in CNNs, but rather the pixel wise maximum of G consecutive layers.
 
@@ -144,30 +145,24 @@ This is followed by the Average Pooling across layers, which is common to CNNs a
 \newcommand{\nngridsample}{\nolinkurl{nn.functional.grid\textunderscore sample} }
 %\newcommand{\nnaffinegrid}{\url{nn.functional.affine\textunderscore grid}}
 %\newcommand{\nngridsample}{\url{nn.functional.grid\textunderscore sample}}
-Within the implementation of the NPTN layer we were able to use an instance of nn.Conv2d, because every kernel used for convolution was also a learn able parameter of the network.
+Within the implementation of the NPTN layer we were able to use an instance of nn.Conv2d, because every kernel used for convolution was also a learnable parameter of the network.
 For the RotNet layer on the other hand, where we only want to learn the unrotated kernels while performing convolution with a few rotated versions of them, we can't use nn.Conv2d class but need to use the nn.functional.conv2d function instead.
-This requires us to define and initialize the unrotated kernels ourself. We also need to mark themas parameters of the network, in order for AutoGrad to be able to calculate the gradients required for back propagation. This is done by wrapping the nn.tensor describing them into an Parameter object.\\
-To compute the rotated versions of the kernels, we used the functions \nnaffinegrid and \nngridsample in combination, because they are differentiable by AutoGrad while proving interpolation which allows for arbitrary rotation angles to be applied. Also they are faster and better tested than anything we would be able to implement from scratch. We had to specify the rotation matrices we want to use, convert them to flow fields using \nnaffinegrid and then perform the rotations using \nngridsample.\\
+This requires us to define and initialize the unrotated kernels ourself. We also need to mark them as parameters of the network, in order for AutoGrad to be able to calculate the gradients required for back propagation. This is done by wrapping the nn.tensor describing them into an Parameter object.\\
+To compute the rotated versions of the kernels, we used the functions \nnaffinegrid and \nngridsample, because they are differentiable by AutoGrad while performing interpolation which allows for arbitrary rotation angles to be applied. We had to specify the rotation matrices we want to use, convert them to flow fields using \nnaffinegrid and then perform the rotations using \nngridsample.\\
 The rest of the layer implementation, namely the nn.MaxPool3d, permutation of layers and the final nn.AvgPool3d are the same as in our NPTN implementation.
 
 \subsection{Multi Layer Networks}
-\subsubsection{Determining the size of individual network layers}
-Once the network layers needed are defined, and before useful experiments can be run, one has to stack multiple of them on top of each other to build multi layered networks.
-Unfortunately the NPTN paper didn't specify the size of each layer precisely enough, which forced us to guess and try different values.
 
-The idea is to keep the number of parameters in the networks we want to compare roughly equivalent to allow comparisons between the different architectures performances.
-
-%TODO Fill in more detail here...
 
 \subsubsection{Input size to fully connected layer}
-The last layer of a network hierarchy usually is a fully connected layer, and pyTorch requires us to specify the dimensions of this layer on instantiation. We decided to expect the input size of the network as an argument to the networks constructor, initialize a random tensor with the input size given, and then pass this through the forward pass excluding the fully connected layer in order to use the size of the result produced to initialize the fully connected layer. This makes it easier to experiment with parameters of the network without having to calculate and adapt the size of the fully connected layer manually every time. 
+The last layer of a network hierarchy usually is a fully connected layer, and pyTorch requires us to specify the dimensions of this layer on instantiation. We decided to expect the input size of the network as an argument to the networks constructor, initialize a random tensor with this specified input size, and then pass it through the network excluding the fully connected layer, in order to use the size of the result to initialize the fully connected layer. This makes it easier to change the network (e.g. kernel size, input image size, number of layers) without having to calculate and adapt the size of the fully connected layer manually. 
 
 \subsubsection{YAML files for Experiment setup}
-We had to run a low of experiments. One option would have been to copy-past our code and adapt the parameters every time, which would have lead to unmaintainable and duplicated code. Instead we opted for YAML files which allowed us to define the experiments we want to run on a very high level.
+We had to run a lot of experiments. In order to avoid code duplication and promote code readability we parsed YAML files containing the parameters.
 
 \section{Experiments and Results}	
-In the following we will present three experiments from the paper that we tried to reproduce and tried to mimic as closely as possible. 
-All the experiments use a two-layered or three-layered structure which include either a NPTN layer, a Convolutional layer or a RotNet layer in each layer. The structure for the two-layered network is shown in Figure \ref{pic:net_structure}. The last softmax layer is not described in the paper, but was added by us [WHY softmax, because it's standard]. 
+In the following we will present three experiments from the paper that we tried to reproduce. 
+All the experiments used a two-layered or three-layered structure. [BETTER: From now on when we use the term layer, we are refering to a structure that consist of either Conv Nptn or Rotnet layer, followed by .... ] Before layer referred to the Convolution or NPTN-layers, but here it includes several different operations and  which includes either a NPTN layer, a Convolutional layer or a RotNet layer in each layer. The structure for the two-layered network is shown in Figure \ref{pic:net_structure}. The last softmax layer is not described in the paper, but was added by us [WHY softmax, because it's standard]. 
 
 \begin{figure}
 	\begin{center}
@@ -176,6 +171,14 @@ All the experiments use a two-layered or three-layered structure which include e
 	\label{pic:network_structure}
 	\end{center}
 \end{figure}
+
+\subsubsection{Determining the size of individual network layers}
+[Once the network layers needed are defined, and before useful experiments can be run, one has to stack multiple of them on top of each other to build multi layered networks.]
+Unfortunately the NPTN paper didn't specify the size of each layer precisely enough, which forced us to guess and try different values.
+
+The idea is to keep the number of parameters in the networks we want to compare roughly equivalent to allow comparisons between the different architectures performances.
+
+%TODO Fill in more detail here...
 
 \subsection{Experiments on CIFAR10}
 The first experiment used the CIFAR10 dataset [CITE]. A CNN and several NPTNs with different values for G are tested. The dimension of the NPTNs is changed for the different values of G such that all networks have the same amount of filters.
@@ -204,7 +207,7 @@ The results from our experiments are shown in Figure \ref{pic:second_experiment}
 
 
 \section{Three-layered-networks}
-This experiment from the paper compares three-layered NPTNs and CNNs of the CIFAR10 dataset [CITE]. 
+This experiment from the paper compares three-layered NPTNs and CNNs of the CIFAR10 [CITE] dataset . 
 The network dimensions are not described well and the paper states that the amount of parameters for those networks is similar, but not exactly the same as in the previous experiments. 
 Therefore we determined possible dimensions for the amount of channels in the NPTNs and CNNs. 
 Again no new learning rate was given for this experiment, so we initially tried with the same experimental setup as in the first two experiments, but using this and the dimensions that seemed likely from the paper led the networks to overfit greatly and the loss values did not improve. 
