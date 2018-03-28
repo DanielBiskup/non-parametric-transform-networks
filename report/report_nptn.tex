@@ -19,12 +19,13 @@
 %
 \mainmatter              % start of the contributions
 %
-\title{Non-Parametric Transformation Networks}
+\title{Non-Parametric Transformation Networks \\Lab: Cognitive Robotics}
 %
 \titlerunning{Non-Parametric Transformation Networks}  % abbreviated title (for running head)
 %  
 %
-\author{Daniel Biskup and Catherine Capellen}
+\author{Daniel Biskup and Catherine Capellen
+ \\Advisors: Arul Selvam and Max Schwarz}
 %
 \authorrunning{Daniel Biskup and Catherine Capellen} % abbreviated author list (for running head)
 %
@@ -41,10 +42,15 @@ The abstract
 %
 
 \section{Introduction}
-CNNs are state of the art in image recognition tasks [FIND CITE]. Certain kind of transformations on these images will not affect the class of the depicted object. 
-Examples for this are small translations, rotations or perspective transforms. Other kind of translations might change the object class, for example if you rotate the image of the number 6, it will look like a 9. 
-Using augmented data in training as well as choices in the architecture of CNNs as pooling layers aim to improve the robustness of CNNs to specific transformations. 
-Pooling is a method that is usually performed spatially, meaning that the 
+Convolutional Neural Networks (CNNs) are state of the art in image classification tasks [FIND CITE]. Certain kind of transformations on these images will not affect the class of the depicted object. 
+Examples for this are small translations, rotations or perspective transforms. [Other kind of translations might change the object class, for example if you rotate the image of the number 6, it will look like a 9.] 
+Using augmented data in training as well as choices in the architecture of CNNs as pooling layers, aim to improve the robustness of CNNs to specific transformations. 
+Pooling is a method that is usually performed spatially, to obtain invariance to small translations. 
+Non-Parametric Transformation Networks (NPTNs) are extensions of CNNs, which use Pooling to achieve invariance to other transformations by pooling over layers, rather than seperately on the different layers.
+\cite{NPTN} introduced NPTNs and performs experiments to test NPTNs against CNNS. In (this lab report) the following we will try to verify the results from the Paper. 
+Additionally we propose our own Architecture RotNet, which is designed to be invariant to Rotations and will also describe the experiments we performed with RotNet. 
+
+First we will describe the network architectures in more detail in Section [REF], then describe our implemenation [REF] and lastly our Results [REF] and Conclusions [REF].
 
 GENERAL TOPIC: Object recognition, CNNs, POOLING, PTN/NPTN, Paper results (SHORT) 
 TASK
@@ -55,7 +61,7 @@ in lab report ? ( DO WE NEED THIS SECTION?) Maybe mention Spatial-
 Transformer networks?
 
 \section{Networks Architectures ( aka Methods)}
-The kinds of networks this report is concerned with are Convolutional Neueral Networks (CNNs), Non-Parametric Transformation Networks (NPTNs), a custom network architecture we call RotNets.
+The kinds of networks this report is concerned with are Convolutional Neural Networks (CNNs), Non-Parametric Transformation Networks (NPTNs), a custom network architecture we call RotNets.
 
 \subsection{Convolutional Neueral Networks}
 NPTNs can be seen as a generalization of CNNs. For that reason we will briefly discuss CNNs.
