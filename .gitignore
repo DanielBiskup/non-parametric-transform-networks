@@ -13,6 +13,8 @@ visualization_try.py
 show_from_output.py
 *.gz
 
+*.xcf
+
 # LaTeX files 
 *.aux
 *.pdf
