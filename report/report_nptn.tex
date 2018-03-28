@@ -109,6 +109,13 @@ The idea is based on the same structure as PTNs (and NPTNs), just that the group
 [ALPHA!]
 
 \section{Implementation in PyTorch}
+\newcommand{\nnaffinegrid}{\nolinkurl{nn.functional.affine\textunderscore grid} }
+\newcommand{\nngridsample}{\nolinkurl{nn.functional.grid\textunderscore sample} }
+\newcommand{\nnConvFunction}{\nolinkurl{nn.functional.conv2d} }
+\newcommand{\nnConvLayer}{\nolinkurl{nn.Conv2d} }
+\newcommand{\nnMaxPool}{\nolinkurl{nn.MaxPool3d} }
+\newcommand{\nnAvgPool}{\nolinkurl{nn.AvgPool3d} }
+
 As the authors of the paper on NPTNs [REF] we used PyTorch for the implemenation of the experiments.
 To be able to reproduce the experiments performed in the paper and conduct experiments on RotNet we had to implement the NPTN layer as well as the RotNet layer.
 
@@ -118,22 +125,22 @@ When implementing new network architectures in PyTorch it's crucial to specify w
 Our implementation follows the description given in the NPTN paper. A sketch of our implementation is given in Figure \ref{fig:NptnImplementation}.
 Lets say we have M inputs and want N outputs while using a set of $|G|$ different filters for each path from input to output.
 Just as for CNNs, all filters we use during convolution are also parameters that are expected to be learned by the network.
-For this reason we can perform the convolutions by using an instance of the nn.Conv2d layer which will automatically initialize the filters and also register them as learn able parameters. This way, by using nn.Conv2d we don't need to worry about AutoGrad and differentiability of parameters ourself.
+For this reason we can perform the convolutions by using an instance of the \nnConvLayer layer which will automatically initialize the filters and also register them as learn able parameters. This way, by using \nnConvLayer we don't need to worry about AutoGrad and differentiability of parameters ourself.
 
-In it's constructor we specify it to have M inputs and $M \cdot N \cdot |G|$ outputs. The important implementation detail here is, that we need to set the groups option to M, which causes nn.Conv2d to use a filter bank of $N\cdot|G|$ filters per input.
+In it's constructor we specify it to have M inputs and $M \cdot N \cdot |G|$ outputs. The important implementation detail here is, that we need to set the groups option to M, which causes \nnConvLayer to use a filter bank of $N\cdot|G|$ filters per input.
 
 %TODO DEL USE SPACE NEEDED__ 
-As stated in the PyTorch documentation [REF] the output value of the nn.Conv2d layer with input size $(N, C_{in}, H, W)$ and output $(N, C_{out}, H_{out}, W_{out})$ can be precisely described as:
+As stated in the PyTorch documentation [REF] the output value of the \nnConvLayer layer with input size $(N, C_{in}, H, W)$ and output $(N, C_{out}, H_{out}, W_{out})$ can be precisely described as:
 \begin{equation*}
 \text{out}(N_i, C_{out_j}) = \text{bias}(C_{out_j}) +
 \sum_{k = 0}^{C_{in} - 1} \text{weight}(C_{out_j}, k) \star \text{input}(N_i, k)
 \end{equation*}
-but since setting groups to M causes nn.Conv2d to operate as if there are M conv layers side by side, each seeing one input channel and producing $N\cdot|G|$ output channels, $C_{in} = 1$, which means, that there will be no weighted sum since only one convolution will be calculated per output.
+but since setting groups to M causes \nnConvLayer to operate as if there are M conv layers side by side, each seeing one input channel and producing $N\cdot|G|$ output channels, $C_{in} = 1$, which means, that there will be no weighted sum since only one convolution will be calculated per output.
 %TODO __DEL USE SPACE NEEDED
 
 After calling the convolution, we have a tensor with N consecutive packs of $|G|$ layers produced by the same input. But we need $|G|$ layers of input 1 to be followed by $|G|$ layers of input 2 and so on. This can be achieved by a simple permutation, which we decided to defer until after the max pooling across channels. We will come back to this permutation later.
 
-Next we use nn.MaxPool3d with stride 1 and kernel size ($|G|$,1,1). Note, that this does not resemble spatial max pooling as is commonly used in CNNs, but rather the pixel wise maximum of $|G|$ consecutive layers.
+Next we use \nnMaxPool with stride 1 and kernel size ($|G|$,1,1). Note, that this does not resemble spatial max pooling as is commonly used in CNNs, but rather the pixel wise maximum of $|G|$ consecutive layers.
 
 Following this, to perform the aforementioned permutation, we defined a matrix of numbers from zero to the number of layers left in the tensor, permuted it, and then indexed the tensor with it. Note, that this is valid, because indexing tensors is tracked by AutoGrad.
 %TODO Maybe add: Permutation with matrix as formula.
@@ -149,15 +156,11 @@ This is followed by the Average Pooling across layers, which is common to CNNs a
 \end{figure}
 
 \subsection{The RotNet Layer}
-\newcommand{\nnaffinegrid}{\nolinkurl{nn.functional.affine\textunderscore grid} }
-\newcommand{\nngridsample}{\nolinkurl{nn.functional.grid\textunderscore sample} }
-%\newcommand{\nnaffinegrid}{\url{nn.functional.affine\textunderscore grid}}
-%\newcommand{\nngridsample}{\url{nn.functional.grid\textunderscore sample}}
-Within the implementation of the NPTN layer we were able to use an instance of nn.Conv2d, because every kernel used for convolution was also a learnable parameter of the network.
-For the RotNet layer on the other hand, where we only want to learn the unrotated kernels while performing convolution with a few rotated versions of them, we can't use nn.Conv2d class but need to use the nn.functional.conv2d function instead.
+Within the implementation of the NPTN layer we were able to use an instance of \nnConvLayer, because every kernel used for convolution was also a learnable parameter of the network.
+For the RotNet layer on the other hand, where we only want to learn the unrotated kernels while performing convolution with a few rotated versions of them, we can't use \nnConvLayer class but need to use the \nnConvFunction  function instead.
 This requires us to define and initialize the unrotated kernels ourself. We also need to mark them as parameters of the network, in order for AutoGrad to be able to calculate the gradients required for back propagation. This is done by wrapping the nn.tensor describing them into an Parameter object.\\
 To compute the rotated versions of the kernels, we used the functions \nnaffinegrid and \nngridsample, because they are differentiable by AutoGrad while performing interpolation which allows for arbitrary rotation angles to be applied. We had to specify the rotation matrices we want to use, convert them to flow fields using \nnaffinegrid and then perform the rotations using \nngridsample. The constructor of our RotNet layer expects a parameter \nolinkurl{alpha} which tells the layer to create rotated versions of the kernel with rotation angles between \nolinkurl{-alpha} and \nolinkurl{alpha}.\\
-The rest of the layer implementation, namely the nn.MaxPool3d, permutation of layers and the final nn.AvgPool3d are the same as in our NPTN implementation.
+The rest of the layer implementation, namely the \nnMaxPool, permutation of layers and the final \nnAvgPool are the same as in our NPTN implementation.
 
 \subsection{Multi Layer Networks}
 
