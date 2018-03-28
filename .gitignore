@@ -19,3 +19,6 @@ show_from_output.py
 *.log
 *.toc
 *.out
+*.bbl
+*.blg
+*.bib
