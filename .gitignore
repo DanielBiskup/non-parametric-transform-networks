@@ -23,4 +23,5 @@ show_from_output.py
 *.out
 *.bbl
 *.blg
-*.bib
+*.bcf
+*.xml

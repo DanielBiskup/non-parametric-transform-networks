@@ -10,6 +10,9 @@
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 %\RequirePackage[hyphens]{url}
 
+\usepackage{biblatex}
+\bibliography{references.bib}
+
 %\usepackage{makeidx}  % allows for indexgeneration
 %
 \begin{document}
@@ -254,16 +257,16 @@ TATE EARLY FILTERs
 In this lab we learned much about the theory of CNNs 
 Dealing with tensor dimensions.
 Implement networks architectures using \pytorch.
-
+\cite{PyTorchDocumentation}
+\cite{NPTN18}
 %
 % ---- Bibliography ----
 %
-\begin{thebibliography}{}
+
+%\begin{thebibliography}{}
 %
-\bibitem[1]{NPTN}
-Pal, D. K., \& Savvides, M. (2018). Non-Parametric Transformation Networks. arXiv preprint arXiv:1801.04520.
-
-
+%\bibitem[1]{NPTN}
+%Pal, D. K., \& Savvides, M. (2018). Non-Parametric Transformation Networks. arXiv preprint arXiv:1801.04520.
 %TODO References to add:
 % Websites
 % - PyTorch Documentation: http://pytorch.org/docs/0.3.1/
@@ -273,9 +276,7 @@ Pal, D. K., \& Savvides, M. (2018). Non-Parametric Transformation Networks. arXi
 %
 % Figures
 %   Convolution: https://arxiv.org/abs/1603.07285v2
-
-
-\end{thebibliography}
+%\end{thebibliography}
 %\clearpage
 %\addtocmark[2]{Author Index} % additional numbered TOC entry
 %\renewcommand{\indexname}{Author Index}
@@ -285,4 +286,8 @@ Pal, D. K., \& Savvides, M. (2018). Non-Parametric Transformation Networks. arXi
 %\markboth{Subject Index}{Subject Index}
 %\renewcommand{\indexname}{Subject Index}
 %\input{subjidx.tex}
+
+\printbibliography
+
+%\bibliography{refern}
 \end{document}
