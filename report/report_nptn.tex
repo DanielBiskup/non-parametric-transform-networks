@@ -13,15 +13,90 @@
 \usepackage{biblatex}
 \bibliography{references.bib}
 
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+%#######BEGIN SPACE SAVING MAGIC######################################
+%##########PRODUCES SOME ERRORS BUT SEEMS TO WORK!!!##################
+\iftrue  % Use this line if you want space magical saving  (7.75 = 8 pages)
+%\iffalse   % Use this line if you dont want to save space   (8.5 = 9 pages)
 
-%\usepackage{makeidx}  % allows for indexgeneration
-%
+%% This is taken from: https://gist.github.com/yig/81b4c993ea13252edc81
+%% Make everything look better.
+%% http://tex.stackexchange.com/questions/553/what-packages-do-people-load-by-default-in-latex
+%% http://www.howtotex.com/packages/9-essential-latex-packages-everyone-should-use/
+\usepackage{microtype}
+
+%% Shrink space around figures.
+%% This beats manually adding negative \vspace commands everywhere.
+\setlength{\textfloatsep}{0pt}
+\setlength{\textfloatsep}{20pt plus 2pt minus 4pt}
+\setlength{\textfloatsep}{10pt plus 2pt minus 4pt}
+\setlength{\textfloatsep}{10pt plus 1pt minus 2pt}
+\setlength{\dbltextfloatsep}{3pt}
+\setlength{\intextsep}{5pt}
+\setlength{\abovecaptionskip}{5pt}
+\setlength{\belowcaptionskip}{3pt}
+\setlength{\parskip}{4pt}
+% around equations
+\setlength{\abovedisplayskip}{3pt}
+\setlength{\belowdisplayskip}{3pt}
+\setlength\abovedisplayshortskip{3pt}
+\setlength\belowdisplayshortskip{3pt}
+
+%% The wrapfigure environment is also a good way to use less space for a small figure.
+%% It is finicky.
+%% See: http://en.wikibooks.org/wiki/LaTeX/Floats,_Figures_and_Captions#Wrapping_text_around_figures
+
+%% Shrink space around enumerate and itemize
+%% From: http://tex.stackexchange.com/questions/10684/vertical-space-in-lists
+%\usepackage{enumitem}
+%% Set it globally:
+% \setlist{nosep} % or \setlist{noitemsep} to leave space around whole list
+% \setlist{itemsep=1pt, topsep=3pt}
+%% Or locally:
+% \begin{enumerate}[itemsep=1pt, topsep=12pt, partopsep=0pt]
+
+%% Less space around titles.
+%% From: http://tex.stackexchange.com/questions/4999/change-whitespace-above-and-below-a-section-heading
+%\usepackage[medium,compact]{titlesec}
+%% or
+%\usepackage{titlesec}
+%\titlespacing*{\section}{0pt}{*1}{*1}
+
+%% Shrink the \paragraph command.
+%\renewcommand{\paragraph}[1]{\noindent {\bf #1}}
+
+%% Allow Latex to use a smaller minimum spacing between lines.
+%\renewcommand{\baselinestretch}{0.97}
+%\renewcommand{\baselinestretch}{0.982}
+
+%% Shrink space between lines. You probably want to prefer baselinestretch in general.
+%% From: http://tex.stackexchange.com/questions/23824/6-lines-in-one-inch
+%% 6 lines in one inch with an 11pt font:
+%\linespread{0.901}
+%\linespread{0.909}
+%\linespread{1}
+
+%% Shrink the spacing between lines in just the bibliography. This is good.
+% \usepackage{setspace}
+
+%% Then wrap the bibliography in a \begin{spacing}. You can wrap any section like this.
+% \begin{spacing}{0.9}
+% \bibliographystyle{...}
+% \bibliography{references}
+% \end{spacing}
+
+%##Reduce space arount section, subsection and subsubsection headings.
+\usepackage{lipsum}
+\usepackage{titlesec}
+\titlespacing\section{0pt}{12pt plus 4pt minus 2pt}{0pt plus 2pt minus 2pt}
+\titlespacing\subsection{0pt}{12pt plus 4pt minus 2pt}{0pt plus 2pt minus 2pt}
+\titlespacing\subsubsection{0pt}{12pt plus 4pt minus 2pt}{0pt plus 2pt minus 2pt}
+%##Reduce space below figures
+% https://tex.stackexchange.com/a/23315
+\setlength{\belowcaptionskip}{-10pt}
+\fi
+%#######END SPACE SAVING MAGIC######################################
+
 \begin{document}
-%
-\frontmatter          % for the preliminaries
-%
 \pagestyle{headings}  % switches on printing of running heads
 \addtocmark{Non-Parametric Transformation Networks} % additional mark in the TOC
 %
@@ -43,30 +118,26 @@
 \institute{University of Bonn}
 
 \maketitle              % typeset the title of the contribution
-
-\begin{abstract}
-The abstract 
-\end{abstract}
-%
-
+%\begin{abstract}
+%The abstract 
+%\end{abstract}
 \section{Introduction}
-Convolutional Neural Networks (CNNs) are state of the art in image classification tasks [FIND CITE]. Certain kind of transformations on these images do not affect the class of the depicted object. 
-Examples for this are small rotations, translations or perspective transforms.  
+Convolutional Neural Networks (CNNs) are state of the art in image classification tasks [FIND CITE]. Certain kind of transformations on these images, as small rotations or translations, do not affect the class of the depicted object.  
 Using augmented data in training as well as choices in the architecture of CNNs as pooling layers, aim to improve the robustness of CNNs to specific transformations. 
 Pooling is a method that is usually performed spatially, to obtain invariance to small translations. 
+
 Non-Parametric Transformation Networks (NPTNs) are extensions of CNNs, which use pooling to achieve invariance to other transformations by pooling over layers, rather than separately on the different layers.
 Pal and Savvides \cite{NPTN18} introduced NPTNs and performed experiments to test NPTNs against CNNs. The main objective of our project was to verify the results from the paper. 
-Inspired by the NPTNs we additionally designed a network architecture, which we called RotNet, supposed to be invariant specifically towards rotations.
+Inspired by the NPTNs we additionally designed a network architecture, called RotNet, supposed to be invariant towards rotations.
 
-First we will describe the network architectures in more detail in Section [REF], then describe our implementation [REF] and experiments [REF] and lastly our Results [REF] and Conclusions [REF].
+In this paper we will first describe the network architectures in more detail in Section [REF], then describe our implementation [REF] and experiments [REF] and lastly our results [REF] and the conclusions [REF].
 
-\section{Networks Architectures}
-The kinds of networks this report is concerned with are Convolutional Neural Networks (CNNs), Non-Parametric Transformation Networks (NPTNs), a custom network architecture we call RotNets.
+\section{Networks Architectures} In the following we will describe Convolutional Neural Networks (CNNs), Non-Parametric Transformation Networks (NPTNs) and a custom network architecture we call RotNet.
 
 \subsection{Convolutional Neural Networks}
 NPTNs can be seen as a generalization of CNNs. For that reason we will briefly discuss CNNs. 
 \subsubsection{Convolution}
-As the name suggests, NPTNs make heavy use of the convolution operation. Convolutions, as illustrated in Figure \ref{fig:conv}, calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network.
+As the name suggests, CNNs make heavy use of the convolution operation. Convolutions, as illustrated in Figure \ref{fig:conv}, calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network.
 
 \begin{figure}
 	\centering
@@ -96,9 +167,9 @@ As the name suggests, NPTNs make heavy use of the convolution operation. Convolu
 \fi
 
 \subsubsection{Spatial Max Pooling}
-Spatial max pooling, generally just called max pooling is another common operation used in CNNs.
+Spatial max pooling, generally just called max pooling, is another common operation used in CNNs.
 Each neuron in the max pooling layer takes into account only a subregion of the previous
-layers output and takes the maximum value of it to be it's output. By doing this it makes the network invariant to small translations. Max pooling is illustrated in Figure \ref{fig:maxpooling}.
+layers output and passes on the maximum value. By doing this it makes the network invariant to small translations. Max pooling is illustrated in Figure \ref{fig:maxpooling}.
 
 \iffalse
 \begin{figure}
@@ -112,10 +183,10 @@ layers output and takes the maximum value of it to be it's output. By doing this
 
 \subsection{Parametric and Non-Parametric Transformation Networks}
 
-Parametric Transformation Networks (PTNs) and Non-Parametric Transformation Networks, as introduced in \cite{NPTN18}, try to add more transformation invariance to CNNs. For this a transformation group G is used:
-Where a CNNs have one filter, PTNs and NPTNs have $|G|$ filters and a pixel wise max pooling operation is performed over the filters, such that for each pixel the strongest result of the convolution with a filter is used. This is illustrated in Figure \ref{pic:nptn}.
+Parametric Transformation Networks (PTNs) and Non-Parametric Transformation Networks (NPTNs), as introduced in \cite{NPTN18}, try to add more transformation invariance to CNNs. For this a transformation group G is used:
+Where CNNs have one filter, PTNs and NPTNs have $|G|$ filters and a pixel wise max pooling operation is performed over the filters, such that for each pixel the strongest result of the convolution with a filter is used. This is illustrated in Figure \ref{pic:nptn}.
 
-For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a (unitary) group of transformations G and are learned simultaneously to $w$ for each of the different $w$. 
+For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a unitary group of transformations G and are learned simultaneously to $w$ for each of the different $w$. 
 
 For NPTNs the filters are independent of each other and are not restricted to belong to a transformation group. However they are expected to learn transformations.
 For $|G|=1$ a NPTN conceptually does the same as a CNN, which is why NPTNs can be considered to be a generalization of CNNs. 
@@ -130,7 +201,7 @@ For $|G|=1$ a NPTN conceptually does the same as a CNN, which is why NPTNs can b
 
 \subsection{RotNets}
 Rotation Networks (RotNets) were our idea for the additional task of designing a network that due to its structure is invariant to rotations. 
-The idea is based on the same structure as PTNs (and NPTNs), just that the group of transformations is fixed to be rotations. Therefore there exists one set of weights $w$, which is learned for each $|G|$ transformations and this weights are rotated into the new kernels. 
+The idea is based on the same structure as PTNs (and NPTNs), just that the group of transformations is fixed to be rotations. Therefore there exists one set of weights and this weights are rotated by  into the $|G|\cdot w$ new kernels. 
 \newcommand{\pytorch}{PyTorch }
 \section{Implementation in \pytorch}
 \newcommand{\nnaffinegrid}{\nolinkurl{nn.functional.affine\textunderscore grid} }
