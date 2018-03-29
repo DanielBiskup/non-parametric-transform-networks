@@ -69,7 +69,7 @@ As the name suggests, NPTNs make heavy use of the Convolution Operation. Convolu
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=\textwidth]{result_images/Conv.png}
-		\caption{Convolving a 3 $\times$ 3 kernel over a 4 $\times$ 4 input using unit strides [SOURCE]}
+		\caption{Convolving a 3 $\times$ 3 kernel over a 4 $\times$ 4 input using unit strides (Figure taken from \cite{ConvArithmetic16})}
 		\label{fig:conv}
 	\end{center}
 \end{figure}
@@ -89,7 +89,7 @@ layers output and takes the maximum value of it to be it's output. By doing this
 
 \subsection{Parametric and Non-Parametric Transformation Networks}
 
-Parametric Transformation Networks (PTNs) and Non-Parametric Transformation Networks, as introduced in \cite{NPTN}, try to add more transformation invariance to CNNs. For this a transformation group G is used:
+Parametric Transformation Networks (PTNs) and Non-Parametric Transformation Networks, as introduced in \cite{NPTN18}, try to add more transformation invariance to CNNs. For this a transformation group G is used:
 Where a CNNs have one filter, PTNs and NPTNs have $|G|$ filters and a pixel wise max pooling operation is performed over the filters, such that for each pixel the strongest result of the convolution with a filter is used. This is illustrated in Figure \ref{pic:nptn}.
 
 For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a (unitary) group of transformations G and are learned simultaneously to $w$ for each of the different $w$. 
@@ -104,7 +104,6 @@ For $|G|=1$ a NPTN conceptually does the same as a CNN, which is why NPTNs can b
 	\label{pic:nptn}
 	\end{center}
 \end{figure}
-
 
 \subsection{RotNets}
 Rotation Networks (RotNets) were our idea for the additional task of designing a network that due to its structure is invariant to rotations. 
@@ -258,35 +257,10 @@ In this lab we learned much about the theory of CNNs
 Dealing with tensor dimensions.
 Implement networks architectures using \pytorch.
 
-%
 % ---- Bibliography ----
-%
-
-%\begin{thebibliography}{}
-%
-%\bibitem[1]{NPTN}
-%Pal, D. K., \& Savvides, M. (2018). Non-Parametric Transformation Networks. arXiv preprint arXiv:1801.04520.
 %TODO References to add:
-% Websites
-% - PyTorch Documentation: http://pytorch.org/docs/0.3.1/
-%
-% Papers
-% - NPTN paper: https://arxiv.org/abs/1801.04520v3
-%
 % Figures
 %   Convolution: https://arxiv.org/abs/1603.07285v2
-%\end{thebibliography}
-%\clearpage
-%\addtocmark[2]{Author Index} % additional numbered TOC entry
-%\renewcommand{\indexname}{Author Index}
-%\printindex
-%\clearpage
-%\addtocmark[2]{Subject Index} % additional numbered TOC entry
-%\markboth{Subject Index}{Subject Index}
-%\renewcommand{\indexname}{Subject Index}
-%\input{subjidx.tex}
 
 \printbibliography
-
-%\bibliography{refern}
 \end{document}
