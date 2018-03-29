@@ -13,6 +13,9 @@
 \usepackage{biblatex}
 \bibliography{references.bib}
 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
 %\usepackage{makeidx}  % allows for indexgeneration
 %
 \begin{document}
@@ -52,7 +55,7 @@ Examples for this are small rotations, translations or perspective transforms.
 Using augmented data in training as well as choices in the architecture of CNNs as pooling layers, aim to improve the robustness of CNNs to specific transformations. 
 Pooling is a method that is usually performed spatially, to obtain invariance to small translations. 
 Non-Parametric Transformation Networks (NPTNs) are extensions of CNNs, which use pooling to achieve invariance to other transformations by pooling over layers, rather than separately on the different layers.
-Pal and Savvides \cite{NPTN} introduced NPTNs and performed experiments to test NPTNs against CNNs. The main objective of our project was to verify the results from the paper. 
+Pal and Savvides \cite{NPTN18} introduced NPTNs and performed experiments to test NPTNs against CNNs. The main objective of our project was to verify the results from the paper. 
 Inspired by the NPTNs we additionally designed a network architecture, which we called RotNet, supposed to be invariant specifically towards rotations.
 
 First we will describe the network architectures in more detail in Section [REF], then describe our implementation [REF] and experiments [REF] and lastly our Results [REF] and Conclusions [REF].
@@ -64,6 +67,25 @@ The kinds of networks this report is concerned with are Convolutional Neural Net
 NPTNs can be seen as a generalization of CNNs. For that reason we will briefly discuss CNNs. 
 \subsubsection{Convolution}
 As the name suggests, NPTNs make heavy use of the convolution operation. Convolutions, as illustrated in Figure \ref{fig:conv}, calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network.
+
+\begin{figure}
+	\centering
+	\begin{minipage}{.65\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_images/Conv.png}
+		\caption{Convolving a 3 $\times$ 3 kernel over a 4 $\times$ 4 input using unit strides (Figure taken from \cite{ConvArithmetic16})}
+		\label{fig:conv}
+	\end{minipage}%
+	\hspace{0.1cm}
+	\begin{minipage}{.25\textwidth}
+		\centering
+		\includegraphics[width=1\textwidth]{result_images/maxpooling.jpg}
+		\caption{Example of max pooling over a 4 $\times$ 4 image with a window size of $2 \times 2$ and a stride of $2$ [MORE]}
+		\label{fig:maxpooling}
+	\end{minipage}
+\end{figure}
+
+\iffalse
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=\textwidth]{result_images/Conv.png}
@@ -71,12 +93,14 @@ As the name suggests, NPTNs make heavy use of the convolution operation. Convolu
 		\label{fig:conv}
 	\end{center}
 \end{figure}
+\fi
 
 \subsubsection{Spatial Max Pooling}
 Spatial max pooling, generally just called max pooling is another common operation used in CNNs.
 Each neuron in the max pooling layer takes into account only a subregion of the previous
 layers output and takes the maximum value of it to be it's output. By doing this it makes the network invariant to small translations. Max pooling is illustrated in Figure \ref{fig:maxpooling}.
 
+\iffalse
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=0.40\textwidth]{result_images/maxpooling.jpg}
@@ -84,6 +108,7 @@ layers output and takes the maximum value of it to be it's output. By doing this
 		\label{fig:maxpooling}
 	\end{center}
 \end{figure}
+\fi
 
 \subsection{Parametric and Non-Parametric Transformation Networks}
 
@@ -131,12 +156,14 @@ For this reason we can perform the convolutions by using an instance of the \nnC
 In it's constructor we specify it to have $M$ inputs and $M \cdot N \cdot |G|$ outputs. The important implementation detail here is, that we need to set the groups option to $M$, which causes \nnConvLayer to use a filter bank of $N\cdot|G|$ filters per input.
 
 %TODO DEL USE SPACE NEEDED__ 
+\iffalse
 As stated in the \pytorch documentation \cite{PyTorchDocumentation} the output value of the \nnConvLayer layer with input size $(N, C_{in}, H, W)$ and output $(N, C_{out}, H_{out}, W_{out})$ can be precisely described as:
 \begin{equation*}
 \text{out}(N_i, C_{out_j}) = \text{bias}(C_{out_j}) +
 \sum_{k = 0}^{C_{in} - 1} \text{weight}(C_{out_j}, k) \star \text{input}(N_i, k)
 \end{equation*}
 but since setting groups to $M$ causes \nnConvLayer to operate as if there are $M$ convolution layers side by side, each seeing one input channel and producing $N\cdot|G|$ output channels, $C_{in} = 1$, which means, that there will be no weighted sum since only one convolution will be calculated per output.
+\fi
 %TODO __DEL USE SPACE NEEDED
 
 After calling the convolution, we have a tensor with $N$ consecutive packs of $|G|$ layers produced by the same input. But we need $|G|$ layers of input 1 to be followed by $|G|$ layers of input 2 and so on. This can be achieved by a simple permutation, which we decided to defer until after the max pooling across channels. We will come back to this permutation later.
@@ -146,7 +173,7 @@ Next we use \nnMaxPool with stride 1 and kernel size $(|G|,1,1)$. Note, that thi
 Following this, to perform the aforementioned permutation, we defined a matrix of numbers from zero to the number of layers left in the tensor, permuted it, and then indexed the tensor with it. Note, that this is valid, because indexing tensors is tracked by AutoGrad.
 %TODO Maybe add: Permutation with matrix as formula.
 
-This is followed by the average pooling across layers, which is common to CNNs and actually replaces the weighted sum operation in the formula of $\text{out}(N_i, C_{out_j})$ above. This can be archived by using \nnAvgPool.
+This is followed by the average pooling across layers, which is common to CNNs and archived by using \nnAvgPool.
 
 \begin{figure}
 	\begin{center}
@@ -169,8 +196,10 @@ The rest of the layer implementation, namely the \nnMaxPool, permutation of laye
 \subsubsection{Input size to fully connected layer}
 The last layer of a network hierarchy usually is a fully connected layer, and \pytorch requires us to specify the dimensions of this layer on instantiation. We decided to expect the input size of the network as an argument to the networks constructor, initialize a random tensor with this specified input size, and then pass it through the network excluding the fully connected layer, in order to use the size of the result to initialize the fully connected layer. This makes it easier to change the network (e.g. kernel size, input image size, number of layers) without having to calculate and adapt the size of the fully connected layer manually. 
 
+\iffalse
 \subsubsection{YAML files for Experiment setup}
 We had to run a lot of experiments. In order to avoid code duplication and promote code readability we parsed YAML files containing the parameters.
+\fi
 
 \section{Experiments and Results}	
 In the following we will present three experiments from the paper that we tried to reproduce. 
@@ -281,6 +310,6 @@ Implement networks architectures using \pytorch.
 %TODO References to add:
 % Figures
 %   Convolution: https://arxiv.org/abs/1603.07285v2
-
+\small
 \printbibliography
 \end{document}
