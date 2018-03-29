@@ -52,12 +52,10 @@ Examples for this are small rotations, translations or perspective transforms.
 Using augmented data in training as well as choices in the architecture of CNNs as pooling layers, aim to improve the robustness of CNNs to specific transformations. 
 Pooling is a method that is usually performed spatially, to obtain invariance to small translations. 
 Non-Parametric Transformation Networks (NPTNs) are extensions of CNNs, which use pooling to achieve invariance to other transformations by pooling over layers, rather than separately on the different layers.
-Pal and Savvides \cite{NPTN18} introduced NPTNs and performed experiments to test NPTNs against CNNs. The main objective of our project was to verify the results from the paper. 
-Inspired by the NPTNs we additionally designed a network architecture, which we call RotNet, supposed to be invariant specifically towards rotations.
+Pal and Savvides \cite{NPTN} introduced NPTNs and performed experiments to test NPTNs against CNNs. The main objective of our project was to verify the results from the paper. 
+Inspired by the NPTNs we additionally designed a network architecture, which we called RotNet, supposed to be invariant specifically towards rotations.
 
 First we will describe the network architectures in more detail in Section [REF], then describe our implementation [REF] and experiments [REF] and lastly our Results [REF] and Conclusions [REF].
-
-[IDEA: DO A SMALL PARAGRAPH ABOUT PAPER; SPATIAL TRANSFORMER NETWORK; Methods how to deal with transformations
 
 \section{Networks Architectures}
 The kinds of networks this report is concerned with are Convolutional Neural Networks (CNNs), Non-Parametric Transformation Networks (NPTNs), a custom network architecture we call RotNets.
@@ -65,7 +63,7 @@ The kinds of networks this report is concerned with are Convolutional Neural Net
 \subsection{Convolutional Neural Networks}
 NPTNs can be seen as a generalization of CNNs. For that reason we will briefly discuss CNNs. 
 \subsubsection{Convolution}
-As the name suggests, NPTNs make heavy use of the Convolution Operation. Convolutions, as illustrated in Figure \ref{fig:conv}, calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network.
+As the name suggests, NPTNs make heavy use of the convolution operation. Convolutions, as illustrated in Figure \ref{fig:conv}, calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network.
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=\textwidth]{result_images/Conv.png}
@@ -214,6 +212,20 @@ The paper shows the results for different values of $\rho$. We chose to run the 
 The Paper did specify the data preprocessing in detail, but didn't give new instructions for the learning rate, so we kept the same experiment setup as in the first experiment.
 The results from our experiments are shown in Figure \ref{pic:second_experiment}. 
 [TODO: GRAPHIC OR TABLE WILL BE INSERTED HERE]
+
+
+\begin{center}
+\begin{tabular}{ |c|c|c| } 
+ \hline \hline
+ cell1 & cell2 & cell3 \\ 
+ cell4 & cell5 & cell6 \\ 
+ cell7 & cell8 & cell9 \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+
+
 The experiments in the paper show the best results for the NPTNs with parameters $|G|=2$ or $|G|=3$. Our results show the that these values are also better than the CNN. The difference in loss is also quite similar to the one in the paper. RotNet performs worse than CNN and NPTNs. Accuracy and loss again were consistent. 
 
 \section{Three-layered networks}
@@ -226,6 +238,14 @@ Different than in the first two experiments accuracy and loss are not consistent
 [GRAPHIC will be inserted HERE]
 The paper achieves a lower test loss compared to the experiment with the two-layered network. Also the NPTNs with a higher value of $|G|$ have a bigger improvement compared to their baseline CNN. Our results show the opposite: All NPTNs perform worse than the CNN and they perform worse, the bigger $|G|$ is.
 So many parameters on how to perform this experiment needed to be set by us, since they were not mentioned in the paper, that it is not comparable to the paper anymore.
+
+\begin{figure}
+	\begin{center}
+	\includegraphics[scale=0.35]{result_images/experiment3.jpg}
+	\caption{Accuracy of the three-layered networks on  the CIFAR-10 dataset.}
+	\label{pic:experiment3}
+	\end{center}
+\end{figure}
 
 \section{Experiments for RotNet}
 The final experiment was designed by us to see if RotNet was able to perform one of the ideas behind its design: the ability to be invariant to rotations without learning them. [Maybe already say this in theory part] For this we copied the setup of the MNIST rotation experiment with the difference, that this time we only rotated the test set. The results are shown in Figure \ref{pic:experiment4}. 
