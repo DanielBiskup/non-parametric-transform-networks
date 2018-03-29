@@ -53,9 +53,9 @@ Using augmented data in training as well as choices in the architecture of CNNs 
 Pooling is a method that is usually performed spatially, to obtain invariance to small translations. 
 Non-Parametric Transformation Networks (NPTNs) are extensions of CNNs, which use pooling to achieve invariance to other transformations by pooling over layers, rather than separately on the different layers.
 Pal and Savvides \cite{NPTN} introduced NPTNs and performed experiments to test NPTNs against CNNs. The main objective of our project was to verify the results from the paper. 
-Inspired by the NPTNs we additionally designed a network architecture,which we calle RotNet, supposed to be invariant specifically towards rotations.
+Inspired by the NPTNs we additionally designed a network architecture, which we called RotNet, supposed to be invariant specifically towards rotations.
 
-First we will describe the network architectures in more detail in Section [REF], then describe our implemenation [REF] and experiments [REF] and lastly our Results [REF] and Conclusions [REF].
+First we will describe the network architectures in more detail in Section [REF], then describe our implementation [REF] and experiments [REF] and lastly our Results [REF] and Conclusions [REF].
 
 \section{Networks Architectures}
 The kinds of networks this report is concerned with are Convolutional Neural Networks (CNNs), Non-Parametric Transformation Networks (NPTNs), a custom network architecture we call RotNets.
@@ -67,7 +67,7 @@ As the name suggests, NPTNs make heavy use of the convolution operation. Convolu
 \begin{figure}
 	\begin{center}
 		\includegraphics[width=\textwidth]{result_images/Conv.png}
-		\caption{Convolving a 3 $\times$ 3 kernel over a 4 $\times$ 4 input using unit strides [SOURCE]}
+		\caption{Convolving a 3 $\times$ 3 kernel over a 4 $\times$ 4 input using unit strides (Figure taken from \cite{ConvArithmetic16})}
 		\label{fig:conv}
 	\end{center}
 \end{figure}
@@ -87,10 +87,10 @@ layers output and takes the maximum value of it to be it's output. By doing this
 
 \subsection{Parametric and Non-Parametric Transformation Networks}
 
-Paramateric Transformation Networks (PTNs) and Non-Parametric Transformation Networks, as introduced in \cite{NPTN}, try to add more tranformation invariance to CNNs. For this a transformation group G is used:
+Parametric Transformation Networks (PTNs) and Non-Parametric Transformation Networks, as introduced in \cite{NPTN18}, try to add more transformation invariance to CNNs. For this a transformation group G is used:
 Where a CNNs have one filter, PTNs and NPTNs have $|G|$ filters and a pixel wise max pooling operation is performed over the filters, such that for each pixel the strongest result of the convolution with a filter is used. This is illustrated in Figure \ref{pic:nptn}.
 
-For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a (unitary) group of transformations G and are learned simultaniously to $w$ for each of the different $w$. 
+For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a (unitary) group of transformations G and are learned simultaneously to $w$ for each of the different $w$. 
 
 For NPTNs the filters are independent of each other and are not restricted to belong to a transformation group. However they are expected to learn transformations.
 For $|G|=1$ a NPTN conceptually does the same as a CNN, which is why NPTNs can be considered to be a generalization of CNNs. 
@@ -98,11 +98,10 @@ For $|G|=1$ a NPTN conceptually does the same as a CNN, which is why NPTNs can b
 \begin{figure}
 	\begin{center}
 	\includegraphics[scale=0.15]{result_images/nptn_paper.png}
-	\caption{Illustration of CNNs vs. NPTNs. The structure of the NPTNs is the same as for PTNs. [REF]}
+	\caption{Illustration of CNNs vs. NPTNs. The structure of the NPTNs is the same as for PTNs. (Figure taken from \cite{NPTN18})}
 	\label{pic:nptn}
 	\end{center}
 \end{figure}
-
 
 \subsection{RotNets}
 Rotation Networks (RotNets) were our idea for the additional task of designing a network that due to its structure is invariant to rotations. 
@@ -118,7 +117,7 @@ The idea is based on the same structure as PTNs (and NPTNs), just that the group
 \newcommand{\nnTensor}{\nolinkurl{nn.Tensor} }
 \newcommand{\nnParameter}{\nolinkurl{torch.nn.Parameter} }
 
-As the authors of the paper on NPTNs [REF] we used \pytorch for the implemenation of the experiments.
+As the authors of the paper on NPTNs \cite{NPTN18} we used \pytorch for the implementation of the experiments.
 To be able to reproduce the experiments performed in the paper and conduct experiments on RotNet we had to implement the NPTN layer as well as the RotNet layer.
 
 When implementing new network architectures in \pytorch it's crucial to specify which values AutoGrad should view as parameters of the network in order for it to be able to apply backpropagation algorithm to the network. Furthermore you need to take care, that all calculations and operations performed in the forward path are differentiable by AutoGrad.
@@ -132,17 +131,17 @@ For this reason we can perform the convolutions by using an instance of the \nnC
 In it's constructor we specify it to have $M$ inputs and $M \cdot N \cdot |G|$ outputs. The important implementation detail here is, that we need to set the groups option to $M$, which causes \nnConvLayer to use a filter bank of $N\cdot|G|$ filters per input.
 
 %TODO DEL USE SPACE NEEDED__ 
-As stated in the \pytorch documentation [REF] the output value of the \nnConvLayer layer with input size $(N, C_{in}, H, W)$ and output $(N, C_{out}, H_{out}, W_{out})$ can be precisely described as:
+As stated in the \pytorch documentation \cite{PyTorchDocumentation} the output value of the \nnConvLayer layer with input size $(N, C_{in}, H, W)$ and output $(N, C_{out}, H_{out}, W_{out})$ can be precisely described as:
 \begin{equation*}
 \text{out}(N_i, C_{out_j}) = \text{bias}(C_{out_j}) +
 \sum_{k = 0}^{C_{in} - 1} \text{weight}(C_{out_j}, k) \star \text{input}(N_i, k)
 \end{equation*}
-but since setting groups to $M$ causes \nnConvLayer to operate as if there are $M$ conv layers side by side, each seeing one input channel and producing $N\cdot|G|$ output channels, $C_{in} = 1$, which means, that there will be no weighted sum since only one convolution will be calculated per output.
+but since setting groups to $M$ causes \nnConvLayer to operate as if there are $M$ convolution layers side by side, each seeing one input channel and producing $N\cdot|G|$ output channels, $C_{in} = 1$, which means, that there will be no weighted sum since only one convolution will be calculated per output.
 %TODO __DEL USE SPACE NEEDED
 
 After calling the convolution, we have a tensor with $N$ consecutive packs of $|G|$ layers produced by the same input. But we need $|G|$ layers of input 1 to be followed by $|G|$ layers of input 2 and so on. This can be achieved by a simple permutation, which we decided to defer until after the max pooling across channels. We will come back to this permutation later.
 
-Next we use \nnMaxPool with stride 1 and kernel size ($|G|$,1,1). Note, that this does not resemble spatial max pooling as is commonly used in CNNs, but rather the pixel wise maximum of $|G|$ consecutive layers.
+Next we use \nnMaxPool with stride 1 and kernel size $(|G|,1,1)$. Note, that this does not resemble spatial max pooling as is commonly used in CNNs, but rather the pixel wise maximum of $|G|$ consecutive layers.
 
 Following this, to perform the aforementioned permutation, we defined a matrix of numbers from zero to the number of layers left in the tensor, permuted it, and then indexed the tensor with it. Note, that this is valid, because indexing tensors is tracked by AutoGrad.
 %TODO Maybe add: Permutation with matrix as formula.
@@ -175,7 +174,7 @@ We had to run a lot of experiments. In order to avoid code duplication and promo
 
 \section{Experiments and Results}	
 In the following we will present three experiments from the paper that we tried to reproduce. 
-All the experiments used a two-layered or three-layered structure. From now on (as in the paper) when we use the term layer, we refer to a structure that contains either the convolutional layer, the NPTN layer or the RotNet layer, followed by other operations. The concrete design of the two-layered network is shown in Figure \ref{pic:net_structure}. The last log-softmax layer is not described in the paper, but was added by us. 
+All the experiments used a two-layered or three-layered structure. From now on (as in the paper) when we use the term layer, we refer to a structure that contains either the convolution layer, the NPTN layer or the RotNet layer, followed by other operations. The concrete design of the two-layered network is shown in Figure \ref{pic:network_structure}. The last log-softmax layer is not described in the paper, but was added by us. 
 For the experiments we noticed in general that the runtime of NPTNs of RotNets was alike and slightly longer than for the CNNs. This is not surprising as the NPTNs contain the convolution operation as well as additional operations at the same place that the CNNs only perform the convolution. 
 \begin{figure}
 	\begin{center}
@@ -195,7 +194,7 @@ Comparing the loss values of the networks to each other, in the paper, all NPTNs
 However the loss values we obtained were to different to the ones from the paper to perform a direct comparison. 
 Also we are not sure if we used the same loss as in the paper.  Therefore we also calculated the accuracy of the networks. The values are consistent with the loss for this experiment, so for each network if the loss is lower, then the accuracy is higher compared to the other networks.
 
-One thing we noticed during this and also the following experiment, is that the test loss was consitently lower than the training loss and also the test accuracy was higher than the training accuracy, even though we used different datasets and used the same function to calculate training and test measures.
+One thing we noticed during this and also the following experiment, is that the test loss was consistently lower than the training loss and also the test accuracy was higher than the training accuracy, even though we used different datasets and used the same function to calculate training and test measures.
 
 \begin{figure}
 	\begin{center}
@@ -277,37 +276,11 @@ TATE EARLY FILTERs
 In this lab we learned much about the theory of CNNs 
 Dealing with tensor dimensions.
 Implement networks architectures using \pytorch.
-\cite{PyTorchDocumentation}
-\cite{NPTN18}
-%
-% ---- Bibliography ----
-%
 
-%\begin{thebibliography}{}
-%
-%\bibitem[1]{NPTN}
-%Pal, D. K., \& Savvides, M. (2018). Non-Parametric Transformation Networks. arXiv preprint arXiv:1801.04520.
+% ---- Bibliography ----
 %TODO References to add:
-% Websites
-% - PyTorch Documentation: http://pytorch.org/docs/0.3.1/
-%
-% Papers
-% - NPTN paper: https://arxiv.org/abs/1801.04520v3
-%
 % Figures
 %   Convolution: https://arxiv.org/abs/1603.07285v2
-%\end{thebibliography}
-%\clearpage
-%\addtocmark[2]{Author Index} % additional numbered TOC entry
-%\renewcommand{\indexname}{Author Index}
-%\printindex
-%\clearpage
-%\addtocmark[2]{Subject Index} % additional numbered TOC entry
-%\markboth{Subject Index}{Subject Index}
-%\renewcommand{\indexname}{Subject Index}
-%\input{subjidx.tex}
 
 \printbibliography
-
-%\bibliography{refern}
 \end{document}
