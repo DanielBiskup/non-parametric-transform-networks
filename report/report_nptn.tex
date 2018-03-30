@@ -129,15 +129,15 @@ We implemented experiments described in the paper by Pal and Savvides \cite{NPTN
 
 \end{abstract}
 \section{Introduction}
-Convolutional Neural Networks (CNNs) are state of the art in image classification tasks [FIND CITE]. Certain kind of transformations on these images, as small rotations or translations, do not affect the class of the depicted object.  
-Using augmented data in training as well as choices in the architecture of CNNs as pooling layers, aim to improve the robustness of CNNs to specific transformations. 
+Convolutional Neural Networks (CNNs) are state of the art in image classification tasks \cite{Goodfellow-et-al-2016}. Certain kind of transformations on these images, such as small rotations or translations, do not affect the class of the depicted object.  
+Using augmented data in training as well as choices in the architecture of CNNs such as pooling layers, aim to improve the robustness of CNNs to specific transformations. 
 Pooling is a method that is usually performed spatially, to obtain invariance to small translations. 
 
 Non-Parametric Transformation Networks (NPTNs) are adaptions of CNNs, which use pooling to achieve invariance to other transformations by pooling over layers, rather than separately on the different layers.
 Pal and Savvides \cite{NPTN18} introduced NPTNs and performed experiments to test NPTNs against CNNs. The main objective of our project was to verify the results from their paper. 
 Inspired by the NPTNs we additionally designed a network architecture, called RotNet, supposed to be invariant towards rotations.
 
-In this paper we will first describe the network architectures in more detail, then describe our implementation and experiments and lastly our results and the conclusions.
+In this report we will first describe the network architectures in more detail, then describe our implementation and experiments and lastly our results and the conclusions.
 
 \section{Networks Architectures} In the following we will introduce Convolutional Neural Networks (CNNs), Non-Parametric Transformation Networks (NPTNs) and a custom network architecture we call RotNet.
 
@@ -146,7 +146,7 @@ NPTNs can be seen as a generalization of CNNs. For that reason we will briefly d
 \subsubsection{Convolution}
 As the name suggests, CNNs make heavy use of the convolution operation. Convolutions
 %, as illustrated in Figure \ref{fig:conv},
- calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network.
+ calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network (\cite{ConvArithmetic16}).
 
 
 \subsubsection{Spatial Max Pooling}
@@ -220,7 +220,7 @@ but since setting groups to $M$ causes \nnConvLayer to operate as if there are $
 
 %After calling the convolution, we have a tensor with $N$ consecutive packs of $|G|$ layers produced by the same input. But we need $|G|$ layers of input 1 to be followed by $|G|$ layers of input 2 and so on. This can be achieved by a simple permutation, which we decided to defer until after the max pooling across channels. We will come back to this permutation later.
 
-Next we use \nnMaxPool with stride 1 and kernel size $(|G|,1,1)$. Note, that this does not resemble spatial max pooling as is commonly used in CNNs, but rather the pixel wise maximum of $|G|$ consecutive layers.
+Next we use \nnMaxPool with stride 1 and kernel size $(|G|,1,1)$. Note, that this does not resemble spatial max pooling as it is commonly used in CNNs, but rather the pixel wise maximum of $|G|$ consecutive layers.
 
 %Following this, to perform the aforementioned permutation, we defined a matrix of numbers from zero to the number of layers left in the tensor, permuted it, and then indexed the tensor with it. Note, that this is valid, because indexing tensors is tracked by AutoGrad.
 The resulting tensor needs to be reordered in such a way, that we always get a sequence of $M$ outputs, non stemming from the same input. We need $N$ of those sequences stacked on top of each other.
@@ -270,8 +270,8 @@ For the experiments we noticed in general that the runtime of NPTNs of RotNets w
 %\end{figure}
 
 \subsection{Experiments on CIFAR-10}
-The first experiment used the CIFAR-10 dataset \cite{CIFAR}. A CNN and several NPTNs with different values for $|G|$ are tested. The dimension of the NPTNs is changed for the different values of G such that all networks have the same amount of filters.
-The paper describes in detail the setup of the experiments regarding learning rate, data preprocessing and network dimensions. However other important information as filter size and loss function is missing. 
+The first experiment used the CIFAR-10 dataset \cite{CIFAR}. A CNN and several NPTNs with different values for $|G|$ are tested. The dimension of the NPTNs is changed for the different values of $|G|$, such that all networks have the same amount of filters.
+The paper describes in detail the setup of the experiments regarding learning rate, data preprocessing and network dimensions. However other important information such as filter size and loss function is missing. 
 For the filter size we used 5, since for the other experiments, the paper mentions  filter sizes of 3, 5 or 7 where 5 often shows the best performance for the NPTNs. 
 In Figure \ref{pic:first_experiment} we show the results from the paper next to our experimental results. For the loss function we chose Negative Log Likelihood Loss (NLLL). 
 Comparing the loss values of the networks to each other, in the paper, all NPTNs perform better than the CNN. In our results, only one of the NPTNs performs better.
@@ -361,19 +361,18 @@ For this we copied the setup of the MNIST rotation experiment with the differenc
 
 
 
-\section{Discussion and further work [FURTHER WORK?}
-Some of the NPTNs perform better than the CNN. However the difference is not as prominent as in the paper. Since the run time of the NPTNs is slightly higher than that of the CNNs, CNNs might be able to achieve better results in the same runtime.
+\section{Conclusion}
+In the three experiments we performed using the descriptions from the paper, at least one of the NPTNs performed better than the CNN.  However the difference is most of the time not as prominent as in the paper and some NPTNs perform worse than the CNN. 
+Since the run time of the NPTNs is slightly higher than that of the CNNs, CNNs might be able to achieve better results in the same runtime.
 
-Overall it was difficult to compare our results to the paper, because important information was missing. 
+Overall it was difficult to compare our results to the paper and verify their results, because important information was missing. 
 RotNet performed worse than the NPTNs and the CNNs in all experiments.
 It also did not show the expected advantages for handling rotated data, without learning these rotations first. 
 
 %WHY WE THINK NPTNS ARE LESS POWERFULL WHY ROTNETS AREWORSE THAN NPTNs WHY IT IS MAYBE NOT A GOOD IDEA TO RO-TATE EARLY FILTERs
 
 %\section{What we learned}
-Personallly we learned in this lab about CNNs and the 
-Dealing with tensor dimensions.
-Implement networks architectures using \pytorch.
+
 
 % ---- Bibliography ----
 %TODO References to add:
