@@ -120,9 +120,10 @@
 \institute{University of Bonn}
 
 \maketitle              % typeset the title of the contribution
-%\begin{abstract}
-%The abstract 
-%\end{abstract}
+\begin{abstract} Non-Parametric Transformation Networks(NPTNs) are generalizations of Convolutional Neural Networks designed to learn invariance towards transformations of the data. 
+We implemented experiments described in the paper by Pal and Savvides \cite{NPTN18} and also propose a network architecture called RotNet designed to be rotation invariant. Our experiments show a small performance advantage of the NPTNs, but a worse performance then found by \cite{NPTN18}.
+
+\end{abstract}
 \section{Introduction}
 Convolutional Neural Networks (CNNs) are state of the art in image classification tasks [FIND CITE]. Certain kind of transformations on these images, as small rotations or translations, do not affect the class of the depicted object.  
 Using augmented data in training as well as choices in the architecture of CNNs as pooling layers, aim to improve the robustness of CNNs to specific transformations. 
@@ -287,11 +288,6 @@ One thing we noticed during this and also the following experiment, is that the 
 \section{Rotation Experiments on MNIST}
 The second experiment from the paper compares a CNN and several NPTNs. Again the dimensions are chosen in a way that matches the values in the paper and leads to the same amount of filters for all networks. 
 This experiment uses the MNIST dataset \cite{MNIST} where data augmentation was applied to all images from training and test set by randomly rotating the images up to a certain angle $\rho$. 
-The paper shows the results for different values of $\rho$. We chose to run the experiments which used the highest values for $\rho$, since the performance difference between NPTNs and CNNs was the biggest for those. Also we added RotNets for comparison.
-The Paper did specify the data preprocessing in detail, but didn't give new instructions for the learning rate, so we kept the same experiment setup as in the first experiment.
-The results from our experiments are shown in Table \ref{tab:resultsexp2}. 
-%[TODO: GRAPHIC OR TABLE WILL BE INSERTED HERE]
-
 \begin{wraptable}{r}{5.5cm}
 %\begin{table}
 \begin{center}
@@ -319,7 +315,10 @@ RN(12,3,$\alpha$=90) & & & 0.0882 & 0.1347 \\
 \label{tab:resultsexp2}
 %\end{table}
 \end{wraptable}
-
+The paper shows the results for different values of $\rho$. We chose to run the experiments which used the highest values for $\rho$, since the performance difference between NPTNs and CNNs was the biggest for those. Also we added RotNets for comparison.
+The Paper did specify the data preprocessing in detail, but didn't give new instructions for the learning rate, so we kept the same experiment setup as in the first experiment.
+The results from our experiments are shown in Table \ref{tab:resultsexp2}. 
+%[TODO: GRAPHIC OR TABLE WILL BE INSERTED HERE]
 
 The experiments in the paper show the best results for the NPTNs with parameters $|G|=2$ or $|G|=3$. Our results show the that these values are also better than the CNN. The difference in loss is also quite similar to the one in the paper. RotNet performs worse than CNN and NPTNs. Accuracy and loss again were consistent. 
 
