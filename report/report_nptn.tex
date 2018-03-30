@@ -10,8 +10,7 @@
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 %\RequirePackage[hyphens]{url}
 
-
-\usepackage{wrapfig}
+\usepackage{wrapfig,lipsum,booktabs}
 \usepackage{biblatex}
 \bibliography{references.bib}
 
@@ -290,20 +289,36 @@ The second experiment from the paper compares a CNN and several NPTNs. Again the
 This experiment uses the MNIST dataset \cite{MNIST} where data augmentation was applied to all images from training and test set by randomly rotating the images up to a certain angle $\rho$. 
 The paper shows the results for different values of $\rho$. We chose to run the experiments which used the highest values for $\rho$, since the performance difference between NPTNs and CNNs was the biggest for those. Also we added RotNets for comparison.
 The Paper did specify the data preprocessing in detail, but didn't give new instructions for the learning rate, so we kept the same experiment setup as in the first experiment.
-The results from our experiments are shown in Figure \ref{pic:second_experiment}. 
-[TODO: GRAPHIC OR TABLE WILL BE INSERTED HERE]
+The results from our experiments are shown in Table \ref{tab:resultsexp2}. 
+%[TODO: GRAPHIC OR TABLE WILL BE INSERTED HERE]
 
-
+\begin{wraptable}{r}{5.5cm}
+%\begin{table}
 \begin{center}
-\begin{tabular}{ |c|c|c| } 
- \hline \hline
- cell1 & cell2 & cell3 \\ 
- cell4 & cell5 & cell6 \\ 
- cell7 & cell8 & cell9 \\ 
+\begin{tabular}{ |c| c c || c c| } 
+ \hline 
+  & \multicolumn{2}{|c||}{Paper results} & \multicolumn{2}{|c|}{Our results} \\
  \hline
-\end{tabular}
-\end{center}
+ Rotations & 60$\deg$ & 90$\deg$ & 60$\deg$ & 90$\deg$ \\
+ \hline
+ CNN(36) & 0.066 & 0.106 & 0.0560 & 0.0736 \\ 
+ %NPTN(36,1) & 0.064 & 0.108  & & \\ 
+ NPTN(18,2) & 0.053 & 0.092  & n.a. & 0.0739\\ 
+ NPTN(12,3) & 0.055 & 0.087 & 0.0409 &  0.0726\\
+ \hline
+RN(12,3,$\alpha$=30 & & &  0.0768 & 0.1176 \\
+RN(12,3,$\alpha$=60) & & & 0.0888 & 0.1353 \\
+RN(12,3,$\alpha$=90) & & & 0.0882 & 0.1347 \\
 
+\hline
+
+\end{tabular}
+
+ \caption{Loss of different networks on the MNIST dataset with random rotations up to the shown degree.}
+\end{center}
+\label{tab:resultsexp2}
+%\end{table}
+\end{wraptable}
 
 
 The experiments in the paper show the best results for the NPTNs with parameters $|G|=2$ or $|G|=3$. Our results show the that these values are also better than the CNN. The difference in loss is also quite similar to the one in the paper. RotNet performs worse than CNN and NPTNs. Accuracy and loss again were consistent. 
