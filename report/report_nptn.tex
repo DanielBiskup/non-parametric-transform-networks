@@ -11,8 +11,10 @@
 %\RequirePackage[hyphens]{url}
 
 \usepackage{wrapfig,lipsum,booktabs}
+
 \usepackage{biblatex}
-\bibliography{references.bib}
+\addbibresource{references.bib}
+% NOTE: Run the following in the commandline before compiling this document: biber report_nptn
 
 %#######BEGIN SPACE SAVING MAGIC######################################
 %##########PRODUCES SOME ERRORS BUT SEEMS TO WORK!!!##################
@@ -375,6 +377,5 @@ Implement networks architectures using \pytorch.
 %TODO References to add:
 % Figures
 %   Convolution: https://arxiv.org/abs/1603.07285v2
-\small
 \printbibliography
 \end{document}
