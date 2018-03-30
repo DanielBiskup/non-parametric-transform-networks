@@ -129,11 +129,11 @@ We implemented experiments described in the paper by Pal and Savvides \cite{NPTN
 
 \end{abstract}
 \section{Introduction}
-Convolutional Neural Networks (CNNs) are state of the art in image classification tasks [FIND CITE]. Certain kind of transformations on these images, as small rotations or translations, do not affect the class of the depicted object.  
+Convolutional Neural Networks (CNNs) are state of the art in image classification tasks [FIND CITE]. Certain kinds of transformations on these images, as small rotations or translations, do not affect the class of the depicted object.  
 Using augmented data in training as well as choices in the architecture of CNNs as pooling layers, aim to improve the robustness of CNNs to specific transformations. 
 Pooling is a method that is usually performed spatially, to obtain invariance to small translations. 
 
-Non-Parametric Transformation Networks (NPTNs) are adaptions of CNNs, which use pooling to achieve invariance to other transformations by pooling over layers, rather than separately on the different layers.
+Non-Parametric Transformation Networks (NPTNs) are generalizations of CNNs, which use pooling to achieve invariance to other transformations by pooling over layers, rather than separately on the different layers.
 Pal and Savvides \cite{NPTN18} introduced NPTNs and performed experiments to test NPTNs against CNNs. The main objective of our project was to verify the results from their paper. 
 Inspired by the NPTNs we additionally designed a network architecture, called RotNet, supposed to be invariant towards rotations.
 
@@ -146,7 +146,7 @@ NPTNs can be seen as a generalization of CNNs. For that reason we will briefly d
 \subsubsection{Convolution}
 As the name suggests, CNNs make heavy use of the convolution operation. Convolutions
 %, as illustrated in Figure \ref{fig:conv},
- calculate the weighted sum over a sub region of an input image in order to calculate the pixel-values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network.
+ calculate the weighted sum over a sub region of an input image in order to calculate the pixel values of the output. The weights used for computing the weighted sum are given by a matrix called filter or kernel. In Computer Vision they are used to detect different kinds of patterns, since convolving an image with a kernel will produce high responses at the regions that match the pattern the filter is designed to respond to. Thus one kernel might respond to vertical edges, another  one to horizontal edges and yet another one to yet another pattern. While kernels traditionally got designed by experts in Computer Vision, within CNNs they are expected to be learned by the network.
 
 
 \subsubsection{Spatial Max Pooling}
@@ -159,7 +159,7 @@ layers output and passes on the maximum value. By doing this it makes the networ
 
 \subsection{Parametric and Non-Parametric Transformation Networks}
 
-Parametric Transformation Networks (PTNs) and Non-Parametric Transformation Networks (NPTNs), as introduced in \cite{NPTN18}, try to add more transformation invariance to CNNs. For this a transformation group G is used:
+Parametric Transformation Networks (PTNs) and Non-Parametric Transformation Networks (NPTNs), as introduced in \cite{NPTN18}, try to add more transformation invariance to CNNs. For this a transformation group $G$ is used:
 Where CNNs have one filter, PTNs and NPTNs have $|G|$ filters and a pixel wise max pooling operation is performed over the filters, such that for each pixel the strongest result of the convolution with a filter is used. This is illustrated in Figure \ref{pic:nptn}.
 
 
@@ -172,7 +172,7 @@ Where CNNs have one filter, PTNs and NPTNs have $|G|$ filters and a pixel wise m
 	\end{center}
 \end{wrapfigure}
 %\end{figure}
-For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a unitary group of transformations G and are learned simultaneously to $w$ for each of the different $w$. 
+For the PTNs these $|G|$ filters are transformations of a base filter with weights $w$. The transformations belong to a unitary group of transformations $G$ and are learned simultaneously to $w$ for each of the different $w$. 
 
 
 For NPTNs the filters are independent of each other and are not restricted to belong to a transformation group. However they are expected to learn transformations.
